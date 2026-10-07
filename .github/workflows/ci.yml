@@ -1,0 +1,195 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [ "master" ]
+  push:
+    branches: [ "master" ]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "20"
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # TODO: re-enable once frontend/ exists
+      # - uses: actions/setup-node@v4
+      #   with:
+      #     node-version: ${{ env.NODE_VERSION }}
+      #     cache: npm
+      #     cache-dependency-path: frontend/package-lock.json
+
+      # TODO: re-enable once frontend/ exists
+      # - name: Install frontend dependencies
+      #   working-directory: frontend
+      #   run: npm ci
+
+      # TODO: re-enable once frontend/ exists
+      # - name: Lint frontend (ESLint)
+      #   working-directory: frontend
+      #   run: npm run lint
+
+      # - name: Typecheck frontend
+      #   working-directory: frontend
+      #   run: npx tsc --noEmit
+
+      # Ruff version is pinned in backend/requirements.txt
+      - name: Lint backend (Ruff)
+        uses: astral-sh/ruff-action@v3
+        with:
+          src: backend
+          version-file: backend/requirements.txt
+          args: check --target-version py312
+
+      - name: Check backend formatting (Ruff)
+        working-directory: backend
+        run: ruff format --check --target-version py312 .
+
+  # TODO: re-enable once frontend/ exists
+  # frontend-tests:
+  #   name: frontend-tests
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ env.NODE_VERSION }}
+  #         cache: npm
+  #         cache-dependency-path: frontend/package-lock.json
+  #
+  #     - name: Install dependencies
+  #       working-directory: frontend
+  #       run: npm ci
+  #
+  #     - name: Run unit tests
+  #       working-directory: frontend
+  #       run: npm test -- --run
+
+  backend-tests:
+    name: backend-tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: powr
+          POSTGRES_PASSWORD: powr
+          POSTGRES_DB: powr_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U powr"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://powr:powr@localhost:5432/powr_test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+
+      - name: Install dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+
+      - name: Run unit tests
+        working-directory: backend
+        run: pytest
+
+  # TODO: re-enable once frontend/ exists and backend/app/main.py has a real app + /health route
+  # end2end-tests:
+  #   name: end2end-tests
+  #   runs-on: ubuntu-latest
+  #   services:
+  #     postgres:
+  #       image: postgres:16
+  #       env:
+  #         POSTGRES_USER: powr
+  #         POSTGRES_PASSWORD: powr
+  #         POSTGRES_DB: powr
+  #       ports:
+  #         - 5432:5432
+  #       options: >-
+  #         --health-cmd "pg_isready -U powr"
+  #         --health-interval 5s
+  #         --health-timeout 5s
+  #         --health-retries 10
+  #   env:
+  #     DATABASE_URL: postgresql://powr:powr@localhost:5432/powr
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ env.NODE_VERSION }}
+  #         cache: npm
+  #         cache-dependency-path: frontend/package-lock.json
+  #
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: ${{ env.PYTHON_VERSION }}
+  #         cache: pip
+  #         cache-dependency-path: backend/requirements*.txt
+  #
+  #     - name: Install frontend dependencies
+  #       working-directory: frontend
+  #       run: npm ci
+  #
+  #     - name: Install backend dependencies
+  #       working-directory: backend
+  #       run: pip install -r requirements.txt
+  #
+  #     - name: Cache Playwright browsers
+  #       id: playwright-cache
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: ~/.cache/ms-playwright
+  #         key: playwright-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+  #
+  #     - name: Install Playwright browsers
+  #       working-directory: frontend
+  #       run: npx playwright install --with-deps chromium
+  #       if: steps.playwright-cache.outputs.cache-hit != 'true'
+  #
+  #     - name: Install Playwright system dependencies
+  #       working-directory: frontend
+  #       run: npx playwright install-deps chromium
+  #       if: steps.playwright-cache.outputs.cache-hit == 'true'
+  #
+  #     - name: Start backend
+  #       working-directory: backend
+  #       run: |
+  #         nohup uvicorn app.main:app --host 127.0.0.1 --port 8000 > ../backend.log 2>&1 &
+  #         npx --yes wait-on -t 60000 http-get://127.0.0.1:8000/health
+  #
+  #     - name: Run end-to-end tests
+  #       working-directory: frontend
+  #       run: npm run test:e2e
+  #
+  #     - name: Upload Playwright report
+  #       if: failure()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: playwright-report
+  #         path: |
+  #           frontend/playwright-report
+  #           backend.log
+  #         if-no-files-found: ignore
