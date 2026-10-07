@@ -1,5 +1,6 @@
 # Source-File AI Declaration
 # AI contribution: 50% or more AI-generated
+# Human-authored baseline: 50% or more human-written; human-authors: Ahmad Saadawi
 version: '3.8'
 
 services:
