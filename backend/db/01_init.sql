@@ -1,5 +1,6 @@
--- Source-File AI Declaration
+-- Copyright 2026 POWR Contributors
 -- AI contribution: 50% or more AI-generated
+
 -- init db setup, subject to change
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

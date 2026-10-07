@@ -1,8 +1,5 @@
-# Source-File AI Declaration
-# AI contribution: 50% or more AI-generated
-fastapi>=0.110.0
-uvicorn[standard]>=0.28.0
-psycopg2-binary>=2.9.9
-pytest>=8.0.0
-httpx>=0.27.0
-ruff==0.16.10
+fastapi==0.142.2
+uvicorn[standard]==0.54.0
+psycopg[binary]==3.3.6
+sqlalchemy==2.1.3
+pydantic-settings==2.15.0

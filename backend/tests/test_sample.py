@@ -1,6 +1,6 @@
-# Source-File AI Declaration
+# Copyright 2026 POWR Contributors
 # AI contribution: No substantial AI-generated code
-# Human-authored baseline: 50% or more human-written; human-authors: Ahmad Saadawi
-def test_environment_sanity():
+
+def test_environment_sanity() -> None:
     """quick and easy sanity check to validate test execution goodge"""
     assert True
