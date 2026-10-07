@@ -1,0 +1,106 @@
+# Source-File AI Declaration
+# AI contribution: 50% or more AI-generated
+# Human-authored baseline: 50% or more human-written; human-authors: Gabriel Shufelt
+#
+# This is actually a workflow from our mini-capstone, but tweaked a bit to eliminate useless notifications
+# Original workflow found here: https://github.com/gabrielshufelt/soen390-commit-and-pray/blob/master/.github/workflows/discord-pr.yml
+name: Discord PR Notification
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, review_requested]
+
+jobs:
+  notify-discord:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Build reviewer mentions
+        id: reviewers
+        env:
+          PR_ACTION: ${{ github.event.action }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          REVIEWERS_JSON: ${{ toJson(github.event.pull_request.requested_reviewers) }}
+          REQUESTED_REVIEWER: ${{ github.event.requested_reviewer.login }}
+          DISCORD_MAP: ${{ toJson(vars) }}
+        run: |
+          # For review_requested event, mention only the newly requested reviewer
+          # For other events, mention all requested reviewers
+          if [ "$PR_ACTION" == "review_requested" ] && [ -n "$REQUESTED_REVIEWER" ]; then
+            LOGINS="$REQUESTED_REVIEWER"
+          else
+            LOGINS=$(echo "$REVIEWERS_JSON" | jq -r '.[].login')
+          fi
+
+          MENTIONS=""
+          DISCORD_IDS=()
+          for username in $LOGINS; do
+            # Never tag the PR author
+            if [ "$username" == "$PR_AUTHOR" ]; then
+              continue
+            fi
+
+            # Variable names can't contain hyphens, so DISCORD_JOHN-DOE becomes DISCORD_JOHN_DOE
+            VAR_NAME="DISCORD_$(echo "$username" | tr '[:lower:]-' '[:upper:]_')"
+            DISCORD_ID=$(echo "$DISCORD_MAP" | jq -r --arg key "$VAR_NAME" '.[$key] // empty')
+            if [ -n "$DISCORD_ID" ]; then
+              MENTIONS="${MENTIONS}<@${DISCORD_ID}> "
+              DISCORD_IDS+=("$DISCORD_ID")
+            else
+              MENTIONS="${MENTIONS}@${username} "
+            fi
+          done
+
+          # If no reviewers are assigned, don't ping anyone
+          if [ -z "$MENTIONS" ]; then
+            MENTIONS="_None assigned yet_"
+          fi
+
+          # Only these Discord IDs are allowed to be pinged by the message
+          USER_IDS=$(printf '%s\n' "${DISCORD_IDS[@]}" | jq -R . | jq -sc 'map(select(length > 0))')
+
+          echo "mentions=${MENTIONS% }" >> $GITHUB_OUTPUT
+          echo "user_ids=${USER_IDS}" >> $GITHUB_OUTPUT
+
+      - name: Send PR notification to Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_PR_WEBHOOK }}
+          REVIEWER_MENTIONS: ${{ steps.reviewers.outputs.mentions }}
+          REVIEWER_IDS: ${{ steps.reviewers.outputs.user_ids }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_ACTION: ${{ github.event.action }}
+        run: |
+          # Build message based on PR action
+          case "$PR_ACTION" in
+            "review_requested")
+              HEADER='👀 **Review Requested!**'
+              ;;
+            "opened")
+              HEADER='🚀 **PR Opened!**'
+              ;;
+            "reopened")
+              HEADER='🔄 **PR Reopened!**'
+              ;;
+            "ready_for_review")
+              HEADER='✅ **PR Ready for Review!**'
+              ;;
+            *)
+              HEADER='📢 **PR Update!**'
+              ;;
+          esac
+
+          if [ "$PR_ACTION" == "review_requested" ]; then
+            MESSAGE=$(printf '%s\n\n**Title:** %s\n**Author:** %s\n**Reviewer:** %s\n🔗 %s' "$HEADER" "$PR_TITLE" "$PR_AUTHOR" "$REVIEWER_MENTIONS" "$PR_URL")
+          else
+            MESSAGE=$(printf '%s\n\n**Title:** %s\n**Author:** %s\n**Reviewers:** %s\n🔗 %s' "$HEADER" "$PR_TITLE" "$PR_AUTHOR" "$REVIEWER_MENTIONS" "$PR_URL")
+          fi
+
+          # allowed_mentions.users whitelists the reviewers, so nobody else (author, @here, @everyone) gets pinged
+          jq -n --arg content "$MESSAGE" --argjson ids "$REVIEWER_IDS" \
+            '{"content": $content, "allowed_mentions": {"users": $ids}}' | \
+          curl -X POST \
+          -H "Content-Type: application/json" \
+          -d @- \
+          "$DISCORD_WEBHOOK_URL"
