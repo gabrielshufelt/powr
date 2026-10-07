@@ -1,3 +1,5 @@
+# Source-File AI Declaration
+# AI contribution: 50% or more AI-generated
 FROM python:3.11-slim
 
 WORKDIR /app
