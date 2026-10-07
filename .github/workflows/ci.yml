@@ -31,20 +31,10 @@ jobs:
       #     cache: npm
       #     cache-dependency-path: frontend/package-lock.json
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-          cache-dependency-path: backend/requirements*.txt
-
       # TODO: re-enable once frontend/ exists
       # - name: Install frontend dependencies
       #   working-directory: frontend
       #   run: npm ci
-
-      - name: Install backend dependencies
-        working-directory: backend
-        run: pip install ruff
 
       # TODO: re-enable once frontend/ exists
       # - name: Lint frontend (ESLint)
@@ -55,11 +45,17 @@ jobs:
       #   working-directory: frontend
       #   run: npx tsc --noEmit
 
+      # Ruff version is pinned in backend/requirements.txt
       - name: Lint backend (Ruff)
+        uses: astral-sh/ruff-action@v3
+        with:
+          src: backend
+          version-file: backend/requirements.txt
+          args: check --target-version py312
+
+      - name: Check backend formatting (Ruff)
         working-directory: backend
-        run: |
-          ruff check .
-          ruff format --check .
+        run: ruff format --check --target-version py312 .
 
   # TODO: re-enable once frontend/ exists
   # frontend-tests:

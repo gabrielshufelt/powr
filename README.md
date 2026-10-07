@@ -12,10 +12,10 @@ Runs on every pull request and every push to `master`. A failing job blocks merg
 
 | Job | What it does |
 |---|---|
-| `lint` | ESLint and type check (frontend), Ruff (backend) |
-| `frontend-tests` | Frontend unit tests |
+| `lint` | ESLint (will be enabled once there is a frontend) and type check (frontend), Ruff (backend) |
+| `frontend-tests` | Frontend unit tests (will be enabled once there is a frontend) |
 | `backend-tests` | Backend unit tests (pytest) with a PostgreSQL service |
-| `end2end-tests` | Starts PostgreSQL and the backend, then runs the Playwright tests |
+| `end2end-tests` | Starts PostgreSQL and the backend, then runs the Playwright tests (will be enabled once there is a frontend and backend/app/main.py has a real app and /health route)  |
 
 npm, pip and Playwright dependencies are cached.
 
