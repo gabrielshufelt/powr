@@ -40,3 +40,4 @@ python_version = "3.12"
 files = ["app", "tests"]
 strict = true
 warn_unreachable = true
+plugins = ["pydantic.mypy"]
