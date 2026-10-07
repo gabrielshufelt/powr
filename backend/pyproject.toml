@@ -1,0 +1,42 @@
+[project]
+name = "powr-backend"
+version = "0.1.0"
+description = "FastAPI backend for powr, ingredient demand forecasting for restaurants"
+requires-python = ">=3.12,<3.13"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = ["db"]
+
+[tool.ruff.lint]
+select = [
+  "E",    # pycodestyle errors
+  "W",    # pycodestyle warnings
+  "F",    # pyflakes
+  "I",    # import sorting
+  "N",    # pep8 naming
+  "B",    # bugbear: likely bugs and design problems
+  "UP",   # pyupgrade: modern Python syntax
+  "SIM",  # simplifications
+  "C4",   # comprehensions
+  "RUF",  # ruff-specific rules
+  "C90",  # mccabe cyclomatic complexity
+  "PLR0915",  # too many statements in one function
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+# Limits from the course code-quality rubric: complexity <= 15, functions <= 50 lines.
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
+[tool.ruff.lint.pylint]
+max-statements = 50
+
+[tool.mypy]
+python_version = "3.12"
+files = ["app", "tests"]
+strict = true
+warn_unreachable = true
