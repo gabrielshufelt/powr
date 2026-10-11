@@ -22,10 +22,13 @@ backend/
       pos/             POS sync; adapters/<provider>/ per POS
       forecasting/     demand forecasting and order recommendations
   db/                  legacy SQL init script, to be replaced by Alembic migrations
-  tests/
-frontend/
+  tests/               unit/ (no database) and integration/ (real PostgreSQL)
+frontend/              React + TypeScript app
+scripts/               repository tooling
 docker-compose.yml     local PostgreSQL + backend
 ```
+
+Setup and run instructions are in `README.md`.
 
 ## Architecture rules
 
@@ -46,6 +49,7 @@ pip install -r requirements-dev.txt
 ruff check . && ruff format --check .
 mypy
 pytest
+python
 ```
 
 ## Conventions

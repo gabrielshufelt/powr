@@ -3,6 +3,235 @@
 [![ci](https://github.com/gabrielshufelt/powr/actions/workflows/ci.yml/badge.svg)](https://github.com/gabrielshufelt/powr/actions/workflows/ci.yml)
 
 Stack: React (TypeScript) frontend, FastAPI (Python) backend, PostgreSQL database.
+Architecture rules are in [`CLAUDE.md`](CLAUDE.md), and the AI declaration policy in
+[`AGENTS.md`](AGENTS.md).
+
+## Getting started
+
+Commands assume macOS or Linux; Windows differences are noted.
+
+### 1. Prerequisites
+
+| Tool | Version | Check with | Needed for |
+|---|---|---|---|
+| Git | any | `git --version` | everything |
+| Python | 3.12 | `python3.12 --version` | running the backend without Docker, tests, linting |
+| Docker Desktop | any recent | `docker --version` | running with Docker |
+| PostgreSQL | 16 | `psql --version` | running the backend without Docker |
+
+On macOS with Homebrew: `brew install python@3.12 postgresql@16`. Docker Desktop is available
+from [docker.com](https://www.docker.com/products/docker-desktop/).
+
+### 2. Get the code and create your `.env`
+
+```bash
+git clone git@github.com:gabrielshufelt/powr.git
+cd powr
+cp .env.example .env
+```
+
+`.env` holds your local settings and is never committed. The defaults work as-is; every
+variable is explained in [`.env.example`](.env.example).
+
+### 3. Run the backend
+
+Choose one of the two options.
+
+#### Option A: with Docker
+
+From the repository root:
+
+```bash
+docker compose up --build
+```
+
+This starts PostgreSQL on port 5432 and the backend on port 8000, reloading when you edit
+code. Stop with `Ctrl+C`, then `docker compose down`. To reset the database completely
+(deletes all local data), run `docker compose down -v`.
+
+#### Option B: directly on your machine
+
+This is also the setup needed to run tests, linting and type checks locally.
+
+1. Create a virtual environment and install dependencies:
+
+   ```bash
+   cd backend
+   python3.12 -m venv .venv
+   source .venv/bin/activate          # Windows: .venv\Scripts\activate
+   pip install -r requirements-dev.txt
+   ```
+
+   Your prompt now starts with `(.venv)`. **Run `source .venv/bin/activate` again in every
+   new terminal** before using `uvicorn`, `pytest`, `ruff` or `mypy`.
+
+2. Start PostgreSQL (`brew services start postgresql@16` on macOS), then create the user and
+   database that `.env` expects:
+
+   ```bash
+   psql -h localhost -d postgres -c "CREATE USER powr_user WITH PASSWORD 'powr_password';"
+   psql -h localhost -d postgres -c "CREATE DATABASE powr_dev OWNER powr_user;"
+   ```
+
+   If `psql` asks for a password you don't know, see [Troubleshooting](#troubleshooting).
+
+3. Start the backend from `backend/`, with the virtual environment active:
+
+   ```bash
+   uvicorn app.main:app --reload
+   ```
+
+   It reads its settings from the `.env` file in the repository root.
+
+### 4. Verify it works
+
+With the backend running, open a second terminal:
+
+```bash
+curl http://localhost:8000/health
+```
+
+The expected response is `{"status": "ok", "database": "ok"}`. If you get
+`{"status": "degraded", "database": "unavailable"}` (HTTP 503), the backend is running but
+cannot reach PostgreSQL; see [Troubleshooting](#troubleshooting).
+
+Interactive API documentation is at <http://localhost:8000/docs>.
+
+### 5. Tests and code quality
+
+Run from `backend/` with the virtual environment active. CI runs the same checks, so a pull
+request passes CI if they pass locally.
+
+| Command | What it does |
+|---|---|
+| `pytest` | Runs all tests |
+| `ruff check .` | Lints for bugs, unused code, import order and complexity limits |
+| `ruff format --check .` | Checks formatting (`ruff format .` fixes it) |
+| `mypy` | Checks type hints in strict mode |
+| `python ../scripts/check_headers.py` | Checks the Source-File AI Declaration of every applicable file (see [`AGENTS.md`](AGENTS.md)) |
+
+Tests are split into `tests/unit/` (no database needed) and `tests/integration/` (real
+PostgreSQL connections). The test that needs a running database is **skipped** unless
+`DATABASE_URL` is set in your shell, as it is in CI:
+
+```bash
+DATABASE_URL=postgresql://powr_user:powr_password@localhost:5432/powr_dev pytest
+```
+
+### Logging
+
+Logging is configured once at startup in `backend/app/core/logging_config.py`. In any module,
+create a logger named after the module and use it instead of `print`:
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+logger.info("Imported %d orders for restaurant %s", count, restaurant_id)
+```
+
+- Use `DEBUG` for detail useful while developing, `INFO` for normal operations, `WARNING` for
+  unexpected but handled situations, and `ERROR` (or `logger.exception` inside an `except`
+  block) for failures.
+- Change the level with `LOG_LEVEL` in `.env` (`DEBUG`, `INFO`, `WARNING` or `ERROR`), then
+  restart the backend.
+- **Never log secrets**: passwords, API keys, OAuth tokens or `DATABASE_URL`. Customer
+  personal data must not be logged either.
+
+### Project layout
+
+```
+backend/
+├── app/
+│   ├── main.py            Application entry point (create_app factory)
+│   ├── core/              Settings, database sessions, logging
+│   ├── api/               App-wide endpoints such as /health
+│   └── modules/           Business features, one package each (pos, forecasting, ...)
+├── db/01_init.sql         Initial schema, applied by Docker on first database start
+├── tests/                 unit/ and integration/ tests
+├── requirements.txt       Runtime dependencies (pinned)
+├── requirements-dev.txt   Runtime + test and lint tools
+└── pyproject.toml         Ruff and mypy configuration
+frontend/                  React + TypeScript app
+scripts/check_headers.py   Source-File AI Declaration check
+docker-compose.yml         Local PostgreSQL + backend
+```
+
+### Troubleshooting
+
+**`command not found: uvicorn` (or `pytest`, `ruff`, `mypy`)**
+The virtual environment is not active. From `backend/`, run `source .venv/bin/activate`. If
+`.venv` does not exist yet, follow Option B, step 1.
+
+**`/health` returns 503 with `"database": "unavailable"`**
+PostgreSQL is not reachable with the credentials in `DATABASE_URL`. The backend terminal logs
+the exact reason. Check that PostgreSQL is running (`pg_isready -h localhost`) and that the
+user and database from Option B, step 2 exist.
+
+**`psql` asks for a password you don't know (Option B, step 2)**
+
+By default `psql` logs in with your computer's username. Some PostgreSQL installers (such as
+the official EnterpriseDB one) only create a user named `postgres`, protected by the password
+chosen during installation.
+
+1. **If you remember that password**, add `-U postgres` to the commands and enter it when
+   asked:
+
+   ```bash
+   psql -h localhost -U postgres -d postgres -c "CREATE USER powr_user WITH PASSWORD 'powr_password';"
+   psql -h localhost -U postgres -d postgres -c "CREATE DATABASE powr_dev OWNER powr_user;"
+   ```
+
+2. **If you don't remember it**, create a separate PostgreSQL just for powr on port 5433. This
+   needs Homebrew's PostgreSQL (`brew install postgresql@16`) and leaves your existing
+   installation untouched.
+
+   1. Set up the database folder (one time only):
+
+      ```bash
+      export LC_ALL=en_US.UTF-8
+      PG="$(brew --prefix postgresql@16)/bin"
+      $PG/initdb -D ~/.local/share/powr-postgres -U postgres --auth-local=trust --auth-host=scram-sha-256
+      ```
+
+   2. Start it:
+
+      ```bash
+      $PG/pg_ctl -D ~/.local/share/powr-postgres -o "-p 5433" -l ~/.local/share/powr-postgres/server.log start
+      ```
+
+   3. Create the powr user and database (no password needed here):
+
+      ```bash
+      $PG/psql -p 5433 -U postgres -d postgres -c "CREATE USER powr_user WITH PASSWORD 'powr_password';"
+      $PG/psql -p 5433 -U postgres -d postgres -c "CREATE DATABASE powr_dev OWNER powr_user;"
+      ```
+
+   4. In your `.env`, change the port in `DATABASE_URL` from `5432` to `5433`:
+
+      ```
+      DATABASE_URL=postgresql://powr_user:powr_password@localhost:5433/powr_dev
+      ```
+
+   5. Continue with Option B, step 3.
+
+   This PostgreSQL does not start automatically after a reboot. Start it again with step 2
+   (in a new terminal, run the `export` and `PG=` lines from step 1 first), and stop it with
+   `$PG/pg_ctl -D ~/.local/share/powr-postgres stop`.
+
+**`ValidationError` mentioning `database_url` on startup**
+`DATABASE_URL` is missing or not a PostgreSQL URL. Check that `.env` exists in the repository
+root (step 2) and that the value starts with `postgresql://`.
+
+**Docker: `port is already allocated` for 5432**
+Another PostgreSQL is already running on your machine. Either stop it
+(`brew services stop postgresql@16`), or set `POSTGRES_PORT=5433` in `.env` and change the
+port in `DATABASE_URL` to `5433`.
+
+**Docker: schema changes in `db/01_init.sql` are not applied**
+That script only runs when the database is first created. Run `docker compose down -v` to
+reset the database, then `docker compose up` again.
 
 ## CI/CD pipeline
 
@@ -12,10 +241,10 @@ Runs on every pull request and every push to `master`. A failing job blocks merg
 
 | Job | What it does |
 |---|---|
-| `lint` | ESLint (will be enabled once there is a frontend) and type check (frontend), Ruff (backend) |
-| `frontend-tests` | Frontend unit tests (will be enabled once there is a frontend) |
-| `backend-tests` | Backend unit tests (pytest) with a PostgreSQL service |
-| `end2end-tests` | Starts PostgreSQL and the backend, then runs the Playwright tests (will be enabled once there is a frontend and backend/app/main.py has a real app and /health route)  |
+| `lint` | Backend: Ruff (lint and format), mypy, and the Source-File AI Declaration check. Frontend: ESLint and type check (will be enabled once the frontend is set up) |
+| `frontend-tests` | Frontend unit tests (will be enabled once the frontend is set up) |
+| `backend-tests` | Backend unit and integration tests (pytest) with a PostgreSQL service |
+| `end2end-tests` | Starts PostgreSQL and the backend, then runs the Playwright tests (will be enabled once the frontend has end-to-end tests) |
 
 npm, pip and Playwright dependencies are cached.
 
