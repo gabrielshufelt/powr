@@ -131,11 +131,28 @@ logger = logging.getLogger(__name__)
 logger.info("Imported %d orders for restaurant %s", count, restaurant_id)
 ```
 
-- Use `DEBUG` for detail useful while developing, `INFO` for normal operations, `WARNING` for
-  unexpected but handled situations, and `ERROR` (or `logger.exception` inside an `except`
-  block) for failures.
-- Change the level with `LOG_LEVEL` in `.env` (`DEBUG`, `INFO`, `WARNING` or `ERROR`), then
-  restart the backend.
+- Pick the method that matches how important the message is:
+
+  | Method | Use it for |
+  |---|---|
+  | `logger.debug(...)` | Detail that only helps while developing or debugging |
+  | `logger.info(...)` | Normal events worth recording, e.g. a sync finished |
+  | `logger.warning(...)` | Something unexpected that the code handled |
+  | `logger.error(...)` | A failure; inside an `except` block, use `logger.exception(...)` to include the traceback |
+
+- `LOG_LEVEL` in `.env` controls which messages are printed, without changing any code. Each
+  setting prints its own level and everything more important (`DEBUG` < `INFO` < `WARNING` <
+  `ERROR`):
+
+  | `LOG_LEVEL` | Printed |
+  |---|---|
+  | `DEBUG` | debug, info, warning and error messages |
+  | `INFO` (default) | info, warning and error messages; debug messages are hidden |
+  | `WARNING` | warning and error messages |
+  | `ERROR` | error messages only |
+
+  For example, set `LOG_LEVEL=DEBUG` while tracking down a bug to see every detail, then
+  restart the backend for the change to take effect.
 - **Never log secrets**: passwords, API keys, OAuth tokens or `DATABASE_URL`. Customer
   personal data must not be logged either.
 
