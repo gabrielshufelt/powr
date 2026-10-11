@@ -1,4 +1,4 @@
-# Copyright 2026 POWR Contributors
+# Source-File AI Declaration
 # AI contribution: 50% or more AI-generated
 """Unit tests for settings validation."""
 
