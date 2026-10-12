@@ -47,17 +47,31 @@ jobs:
       #   working-directory: frontend
       #   run: npx tsc --noEmit
 
-      # Ruff version is pinned in backend/requirements.txt
-      - name: Lint backend (Ruff)
-        uses: astral-sh/ruff-action@v3
+      - uses: actions/setup-python@v5
         with:
-          src: backend
-          version-file: backend/requirements.txt
-          args: check --target-version py312
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+
+      # Ruff and mypy versions are pinned in backend/requirements-dev.txt
+      - name: Install backend dependencies
+        working-directory: backend
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint backend (Ruff)
+        working-directory: backend
+        run: ruff check .
 
       - name: Check backend formatting (Ruff)
         working-directory: backend
-        run: ruff format --check --target-version py312 .
+        run: ruff format --check .
+
+      - name: Type check backend (mypy)
+        working-directory: backend
+        run: mypy
+
+      - name: Check Source-File AI Declarations
+        run: python scripts/check_headers.py
 
   # TODO: re-enable once frontend/ exists
   # frontend-tests:
@@ -110,13 +124,13 @@ jobs:
 
       - name: Install dependencies
         working-directory: backend
-        run: pip install -r requirements.txt
+        run: pip install -r requirements-dev.txt
 
-      - name: Run unit tests
+      - name: Run unit and integration tests
         working-directory: backend
         run: pytest
 
-  # TODO: re-enable once frontend/ exists and backend/app/main.py has a real app + /health route
+  # TODO: re-enable once the frontend has Playwright end-to-end tests (backend /health exists)
   # end2end-tests:
   #   name: end2end-tests
   #   runs-on: ubuntu-latest

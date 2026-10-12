@@ -1,0 +1,8 @@
+# Source-File AI Declaration
+# AI contribution: 50% or more AI-generated
+-r requirements.txt
+
+pytest==9.1.1
+httpx2==2.13.1
+ruff==0.16.10
+mypy==2.4.0

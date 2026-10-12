@@ -1,5 +1,5 @@
 // Source-File AI Declaration
-// AI contribution: 0%
+// AI contribution: No substantial AI-generated code
 // Human made
 
 import { describe, it, expect } from 'vitest'
