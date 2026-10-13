@@ -6,31 +6,27 @@
 # Original workflow found here: https://github.com/gabrielshufelt/soen390-commit-and-pray/blob/master/.github/workflows/discord-pr.yml
 name: Discord PR Notification
 
+# review_requested is left out on purpose: GitHub sends it once per reviewer, which posted one
+# message per reviewer. PRs should be opened with their reviewers already assigned.
 on:
   pull_request:
-    types: [opened, reopened, ready_for_review, review_requested]
+    types: [opened, reopened, ready_for_review]
 
 jobs:
   notify-discord:
+    # A draft is announced once, when it becomes ready for review
+    if: ${{ !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
 
     steps:
       - name: Build reviewer mentions
         id: reviewers
         env:
-          PR_ACTION: ${{ github.event.action }}
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           REVIEWERS_JSON: ${{ toJson(github.event.pull_request.requested_reviewers) }}
-          REQUESTED_REVIEWER: ${{ github.event.requested_reviewer.login }}
           DISCORD_MAP: ${{ toJson(vars) }}
         run: |
-          # For review_requested event, mention only the newly requested reviewer
-          # For other events, mention all requested reviewers
-          if [ "$PR_ACTION" == "review_requested" ] && [ -n "$REQUESTED_REVIEWER" ]; then
-            LOGINS="$REQUESTED_REVIEWER"
-          else
-            LOGINS=$(echo "$REVIEWERS_JSON" | jq -r '.[].login')
-          fi
+          LOGINS=$(echo "$REVIEWERS_JSON" | jq -r '.[].login')
 
           MENTIONS=""
           DISCORD_IDS=()
@@ -74,9 +70,6 @@ jobs:
         run: |
           # Build message based on PR action
           case "$PR_ACTION" in
-            "review_requested")
-              HEADER='👀 **Review Requested!**'
-              ;;
             "opened")
               HEADER='🚀 **PR Opened!**'
               ;;
@@ -91,11 +84,7 @@ jobs:
               ;;
           esac
 
-          if [ "$PR_ACTION" == "review_requested" ]; then
-            MESSAGE=$(printf '%s\n\n**Title:** %s\n**Author:** %s\n**Reviewer:** %s\n🔗 %s' "$HEADER" "$PR_TITLE" "$PR_AUTHOR" "$REVIEWER_MENTIONS" "$PR_URL")
-          else
-            MESSAGE=$(printf '%s\n\n**Title:** %s\n**Author:** %s\n**Reviewers:** %s\n🔗 %s' "$HEADER" "$PR_TITLE" "$PR_AUTHOR" "$REVIEWER_MENTIONS" "$PR_URL")
-          fi
+          MESSAGE=$(printf '%s\n\n**Title:** %s\n**Author:** %s\n**Reviewers:** %s\n🔗 %s' "$HEADER" "$PR_TITLE" "$PR_AUTHOR" "$REVIEWER_MENTIONS" "$PR_URL")
 
           # allowed_mentions.users whitelists the reviewers, so nobody else (author, @here, @everyone) gets pinged
           jq -n --arg content "$MESSAGE" --argjson ids "$REVIEWER_IDS" \
