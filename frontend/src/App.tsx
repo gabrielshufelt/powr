@@ -1,4 +1,5 @@
 // Source-File AI Declaration
+// AI contribution: No substantial AI-generated code
 
 function App() {
   return (
