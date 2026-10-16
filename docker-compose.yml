@@ -1,6 +1,6 @@
 # Source-File AI Declaration
 # AI contribution: 50% or more AI-generated
-# Human-authored baseline: 50% or less human-written; human-authors: Ahmad Saadawi, Gabriel Shufelt
+# Human-authored baseline: Below 50% human-written; human-authors: Ahmad Saadawi, Gabriel Shufelt
 services:
   db:
     image: postgres:16-alpine
