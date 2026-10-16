@@ -34,15 +34,16 @@ services:
       - ./backend:/app
     depends_on:
       - db
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: Dockerfile
-  #   container_name: powr_frontend
-  #   ports:
-  #     - "5173:5173"
-  #   volumes:
-  #     - ./frontend:/app
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: powr_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
 
 volumes:
   postgres_data:
