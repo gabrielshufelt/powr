@@ -1,3 +1,6 @@
+// Source-File AI Declaration
+// AI contribution: No substantial AI-generated code
+
 import { defineConfig, devices } from '@playwright/test';
 
 /**

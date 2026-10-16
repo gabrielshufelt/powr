@@ -1,3 +1,6 @@
+// Source-File AI Declaration
+// AI contribution: No substantial AI-generated code
+
 import { useState } from 'react'
 import heroImg from './assets/hero.png'
 import reactLogo from './assets/react.svg'

@@ -1,3 +1,6 @@
+// Source-File AI Declaration
+// AI contribution: No substantial AI-generated code
+
 import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
