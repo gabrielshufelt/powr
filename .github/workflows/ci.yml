@@ -26,26 +26,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # TODO: re-enable once frontend/ exists
-      # - uses: actions/setup-node@v4
-      #   with:
-      #     node-version: ${{ env.NODE_VERSION }}
-      #     cache: npm
-      #     cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
-      # TODO: re-enable once frontend/ exists
-      # - name: Install frontend dependencies
-      #   working-directory: frontend
-      #   run: npm ci
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
 
-      # TODO: re-enable once frontend/ exists
-      # - name: Lint frontend (ESLint)
-      #   working-directory: frontend
-      #   run: npm run lint
+      - name: Lint frontend (ESLint)
+        working-directory: frontend
+        run: npm run lint
 
-      # - name: Typecheck frontend
-      #   working-directory: frontend
-      #   run: npx tsc --noEmit
+      # tsc -b follows the project references; plain tsc --noEmit checks nothing here
+      - name: Typecheck frontend
+        working-directory: frontend
+        run: npx tsc -b
 
       - uses: actions/setup-python@v5
         with:
