@@ -97,7 +97,19 @@ cannot reach PostgreSQL; see [Troubleshooting](#troubleshooting).
 
 Interactive API documentation is at <http://localhost:8000/docs>.
 
-### 5. Tests and code quality
+### E2E Tests
+To run the end-2-end tests, from the root directory:
+```bash
+npx playwright test
+```
+
+### Frontend Tests
+To run the frontend unit tests:
+```bash
+cd frontend && npm test
+```
+
+### Backend Tests and code quality
 
 Run from `backend/` with the virtual environment active. CI runs the same checks, so a pull
 request passes CI if they pass locally.
