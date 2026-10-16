@@ -31,3 +31,9 @@ test-results/
 
 # Logs
 *.log
+
+# Playwright
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
