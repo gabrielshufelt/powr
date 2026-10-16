@@ -18,6 +18,8 @@ htmlcov/
 # Node
 node_modules/
 dist/
+dist-ssr/
+*.local
 coverage/
 playwright-report/
 test-results/
@@ -31,3 +33,9 @@ test-results/
 
 # Logs
 *.log
+
+# Playwright
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

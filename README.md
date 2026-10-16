@@ -16,6 +16,7 @@ Commands assume macOS or Linux; Windows differences are noted.
 |---|---|---|---|
 | Git | any | `git --version` | everything |
 | Python | 3.12 | `python3.12 --version` | running the backend without Docker, tests, linting |
+| Node.js | 22 | `node --version` | running the frontend without Docker, frontend and e2e tests |
 | Docker Desktop | any recent | `docker --version` | running with Docker |
 | PostgreSQL | 16 | `psql --version` | running the backend without Docker |
 
@@ -45,9 +46,10 @@ From the repository root:
 docker compose up --build
 ```
 
-This starts PostgreSQL on port 5432 and the backend on port 8000, reloading when you edit
-code. Stop with `Ctrl+C`, then `docker compose down`. To reset the database completely
-(deletes all local data), run `docker compose down -v`.
+This starts PostgreSQL on port 5432, the backend on port 8000 and the frontend on port 5173,
+reloading when you edit code. Stop with `Ctrl+C`, then `docker compose down`. To reset the
+database completely (deletes all local data), run `docker compose down -v`. After changing
+frontend dependencies, run `docker compose up --build -V` so the container reinstalls them.
 
 #### Option B: directly on your machine
 
@@ -83,6 +85,14 @@ This is also the setup needed to run tests, linting and type checks locally.
 
    It reads its settings from the `.env` file in the repository root.
 
+4. In another terminal, start the frontend:
+
+   ```bash
+   cd frontend
+   npm ci
+   npm run dev
+   ```
+
 ### 4. Verify it works
 
 With the backend running, open a second terminal:
@@ -95,9 +105,27 @@ The expected response is `{"status": "ok", "database": "ok"}`. If you get
 `{"status": "degraded", "database": "unavailable"}` (HTTP 503), the backend is running but
 cannot reach PostgreSQL; see [Troubleshooting](#troubleshooting).
 
-Interactive API documentation is at <http://localhost:8000/docs>.
+Interactive API documentation is at <http://localhost:8000/docs>, and the frontend is at
+<http://localhost:5173>.
 
-### 5. Tests and code quality
+### E2E Tests
+To run the end-to-end tests, from the root directory (the first two commands are needed once):
+```bash
+npm ci
+npx playwright install --with-deps
+npx playwright test
+```
+
+### Frontend Tests and code quality
+Run from `frontend/` after `npm ci`. CI runs the same checks.
+
+| Command | What it does |
+|---|---|
+| `npm test` | Runs the unit tests |
+| `npm run lint` | Lints with ESLint |
+| `npx tsc -b` | Type checks |
+
+### Backend Tests and code quality
 
 Run from `backend/` with the virtual environment active. CI runs the same checks, so a pull
 request passes CI if they pass locally.
@@ -171,8 +199,9 @@ backend/
 ├── requirements-dev.txt   Runtime + test and lint tools
 └── pyproject.toml         Ruff and mypy configuration
 frontend/                  React + TypeScript app
+e2e/                       Playwright end-to-end tests
 scripts/check_headers.py   Source-File AI Declaration check
-docker-compose.yml         Local PostgreSQL + backend
+docker-compose.yml         Local PostgreSQL + backend + frontend
 ```
 
 ### Troubleshooting
@@ -258,12 +287,15 @@ Runs on every pull request and every push to `master`. A failing job blocks merg
 
 | Job | What it does |
 |---|---|
-| `lint` | Backend: Ruff (lint and format), mypy, and the Source-File AI Declaration check. Frontend: ESLint and type check (will be enabled once the frontend is set up) |
-| `frontend-tests` | Frontend unit tests (will be enabled once the frontend is set up) |
+| `lint` | Backend: Ruff (lint and format), mypy, and the Source-File AI Declaration check. Frontend: ESLint and type check |
+| `frontend-tests` | Frontend unit tests (Vitest) |
 | `backend-tests` | Backend unit and integration tests (pytest) with a PostgreSQL service |
-| `end2end-tests` | Starts PostgreSQL and the backend, then runs the Playwright tests (will be enabled once the frontend has end-to-end tests) |
 
-npm, pip and Playwright dependencies are cached.
+npm and pip dependencies are cached.
+
+### `Playwright Tests` workflow ([playwright.yml](.github/workflows/playwright.yml))
+
+Runs the end-to-end tests on every pull request and every push to `master`.
 
 ### `release` workflow ([release.yml](.github/workflows/release.yml))
 
