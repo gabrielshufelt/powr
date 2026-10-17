@@ -83,10 +83,16 @@ def test_migration_runs_up_and_down_cleanly(engine: Engine) -> None:
     assert table_names(engine) >= AUTH_TABLES
 
 
-def test_email_is_unique_regardless_of_case(migrated: Connection) -> None:
-    add_user(migrated, "John@example.com")
+def test_email_is_unique(migrated: Connection) -> None:
+    add_user(migrated, "john@example.com")
     with pytest.raises(IntegrityError, match="uq_users_email_lower"):
         add_user(migrated, "john@example.com")
+
+
+@pytest.mark.parametrize("email", ["John@example.com", "john@example.com ", " john@example.com"])
+def test_email_must_be_lowercase_without_spaces(migrated: Connection, email: str) -> None:
+    with pytest.raises(IntegrityError, match="users_email_check"):
+        add_user(migrated, email)
 
 
 def test_membership_needs_an_existing_restaurant(migrated: Connection) -> None:
