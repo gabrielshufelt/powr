@@ -1,0 +1,25 @@
+{
+  "name": "powr",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ingredient demand forecasting for independent restaurants",
+  "scripts": {
+    "test:e2e": "playwright test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gabrielshufelt/powr.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/gabrielshufelt/powr/issues"
+  },
+  "homepage": "https://github.com/gabrielshufelt/powr#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^24.13.3"
+  }
+}
