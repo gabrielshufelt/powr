@@ -1,5 +1,5 @@
 # Source-File AI Declaration
-# AI contribution: No substantial AI-generated code
+# AI contribution: 50% or more AI-generated
 
 FROM node:22-alpine
 
@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Copy lockfiles and install dependencies
 COPY package*.json ./
-RUN npm install -g npm@12 && npm ci
+RUN npm ci
 
 # Copy the rest of the application files
 COPY . .

@@ -109,12 +109,15 @@ Interactive API documentation is at <http://localhost:8000/docs>, and the fronte
 <http://localhost:5173>.
 
 ### E2E Tests
-To run the end-to-end tests, from the root directory (the first two commands are needed once):
+To run the end-to-end tests, from the root directory (the first three commands are needed once):
 ```bash
 npm ci
-npx playwright install --with-deps
-npx playwright test
+npm ci --prefix frontend
+npx playwright install --with-deps chromium
+npm run test:e2e
 ```
+Playwright starts the frontend dev server on <http://localhost:5173>, or reuses one that is already
+running (for example from `docker compose up`).
 
 ### Frontend Tests and code quality
 Run from `frontend/` after `npm ci`. CI runs the same checks.
