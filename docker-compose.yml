@@ -1,8 +1,6 @@
 # Source-File AI Declaration
 # AI contribution: 50% or more AI-generated
-# Human-authored baseline: 50% or more human-written; human-authors: Ahmad Saadawi
-version: '3.8'
-
+# Human-authored baseline: Below 50% human-written; human-authors: Ahmad Saadawi, Gabriel Shufelt
 services:
   db:
     image: postgres:16-alpine
@@ -36,15 +34,19 @@ services:
       - ./backend:/app
     depends_on:
       - db
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: Dockerfile
-  #   container_name: powr_frontend
-  #   ports:
-  #     - "5173:5173"
-  #   volumes:
-  #     - ./frontend:/app
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: powr_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
