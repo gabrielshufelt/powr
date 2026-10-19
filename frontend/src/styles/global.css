@@ -193,3 +193,26 @@ tr.edited .qty { border: 2px solid var(--color-primary); }
 .modifier-effect { flex: 2 1 260px; font-size: 14px; }
 .kicker { display: flex; align-items: center; gap: var(--space-4); font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--color-text-muted); }
 .editor-footer { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-12); }
+
+/* Inventory & Vendors */
+.w-200 { width: 200px; }
+.w-320 { width: 320px; }
+.filter-bar { display: flex; flex-wrap: wrap; gap: var(--space-12); align-items: flex-end; padding: var(--space-16); border-bottom: 1px solid var(--color-border); }
+.items-table td, .items-table th { padding-left: var(--space-12); padding-right: var(--space-12); white-space: nowrap; }
+.items-table tr.incomplete { background: var(--color-warning-bg); }
+.items-table tr.inactive td { color: var(--color-text-muted); }
+.item-name { display: inline-flex; align-items: center; gap: var(--space-8); }
+.row-action { text-align: right; }
+.vendors { display: flex; flex-direction: column; gap: var(--space-16); }
+.vendors h2 { margin: 0; }
+.vendor-toolbar { display: flex; gap: var(--space-12); align-items: center; flex-wrap: wrap; }
+.vendor-search { width: 420px; max-width: 100%; }
+.vendor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-16); }
+.vendor-card { display: flex; flex-direction: column; gap: var(--space-12); }
+.vendor-head { display: flex; align-items: center; gap: var(--space-12); }
+.avatar { width: 40px; height: 40px; flex: none; border-radius: var(--radius-8); display: inline-flex; align-items: center; justify-content: center; background: var(--color-primary-light); color: var(--color-primary); font-weight: 600; }
+.vendor-details, .vendor-terms { display: flex; flex-direction: column; gap: 2px; }
+.vendor-terms { padding-top: var(--space-12); border-top: 1px solid var(--color-divider); font-size: 14px; }
+.vendor-edit { align-self: flex-end; margin-top: auto; }
+.checkbox { display: flex; align-items: center; gap: var(--space-8); min-height: 40px; color: var(--color-text); cursor: pointer; }
+.checkbox input { width: 20px; height: 20px; margin: 0; accent-color: var(--color-primary); }
