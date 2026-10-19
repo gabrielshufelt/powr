@@ -40,6 +40,7 @@ GENERIC_AUTH_ERROR = "Invalid email or password."
 DbSession = Annotated[Session, Depends(get_db)]
 AppSettings = Annotated[Settings, Depends(get_settings)]
 
+
 def _set_session_cookie(response: Response, token: str, settings: Settings) -> None:
     response.set_cookie(
         key=settings.session_cookie_name,
