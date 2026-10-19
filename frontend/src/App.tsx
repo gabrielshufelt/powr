@@ -9,6 +9,7 @@ import { PageHeader } from './layout/PageHeader'
 import { NAV, type PageId, type PageState } from './layout/navigation'
 import { StateMessage } from './components/StateMessage'
 import { ToastProvider } from './components/Toast'
+import { MockDataProvider } from './mocks/MockDataProvider'
 import { Home } from './pages/Home'
 import { RecommendedOrders } from './pages/RecommendedOrders'
 import { Forecast } from './pages/Forecast'
@@ -42,29 +43,31 @@ function App() {
   const showPage = state === 'ready' || page === 'settings'
 
   return (
-    <ToastProvider>
-    <div className="app">
-      <Sidebar page={page} onNavigate={setPage} />
-      <main className="content">
-        {showPage ? pages[page] : (
-          <>
-            <PageHeader title={title} />
-            <StateMessage state={state} emptyText={EMPTY_TEXT[page]} />
-          </>
-        )}
-      </main>
+    <MockDataProvider>
+      <ToastProvider>
+        <div className="app">
+          <Sidebar page={page} onNavigate={setPage} />
+          <main className="content">
+            {showPage ? pages[page] : (
+              <>
+                <PageHeader title={title} />
+                <StateMessage state={state} emptyText={EMPTY_TEXT[page]} />
+              </>
+            )}
+          </main>
 
-      <div className="demo">
-        Demo state:
-        <select value={state} onChange={(e) => setState(e.target.value as PageState)} aria-label="Demo state">
-          <option value="ready">Ready</option>
-          <option value="empty">Empty</option>
-          <option value="loading">Loading</option>
-          <option value="error">Error</option>
-        </select>
-      </div>
-    </div>
-    </ToastProvider>
+          <div className="demo">
+            Demo state:
+            <select value={state} onChange={(e) => setState(e.target.value as PageState)} aria-label="Demo state">
+              <option value="ready">Ready</option>
+              <option value="empty">Empty</option>
+              <option value="loading">Loading</option>
+              <option value="error">Error</option>
+            </select>
+          </div>
+        </div>
+      </ToastProvider>
+    </MockDataProvider>
   )
 }
 
