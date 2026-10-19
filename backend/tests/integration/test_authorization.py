@@ -161,4 +161,3 @@ def test_removed_membership_loses_access(new_client: ClientFactory, engine: Engi
         connection.execute(text("DELETE FROM restaurant_memberships"))
 
     assert client.get("/probe/me").status_code == 401
-    
