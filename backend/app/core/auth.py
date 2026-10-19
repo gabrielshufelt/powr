@@ -73,10 +73,7 @@ def get_current_user(
             WHERE u.id = :user_id AND r.id = :restaurant_id
             """
         ),
-        {
-            "user_id": session_data.get("user_id"),
-            "restaurant_id": session_data.get("restaurant_id"),
-        },
+        {"user_id": user_id, "restaurant_id": restaurant_id},
     ).first()
     if row is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=UNAUTHENTICATED_ERROR)
