@@ -48,8 +48,9 @@ export function isIncomplete(item: InventoryItem): boolean {
 
 const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 
+// Tiny per-order costs (a pinch of salt) read better as "< $0.01" than "$0.00".
 export function formatMoney(n: number): string {
-  return money.format(n)
+  return n > 0 && n < 0.005 ? `< ${money.format(0.01)}` : money.format(n)
 }
 
 export function formatQty(n: number, unit: string): string {
