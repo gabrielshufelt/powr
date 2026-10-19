@@ -54,7 +54,8 @@ h2 { margin: 0 0 var(--space-12); font-size: 18px; font-weight: 600; }
 .link { font: inherit; border: none; background: none; color: var(--color-primary); font-weight: 600; text-decoration: underline; cursor: pointer; padding: 0; }
 
 /* Badges, tags, alerts */
-.badge { display: inline-block; padding: 3px 10px; border-radius: var(--radius-full); font-size: 12px; font-weight: 600; background: var(--color-divider); color: var(--color-text-secondary); }
+.badge { display: inline-flex; align-items: center; gap: var(--space-4); padding: 2px 10px; border-radius: var(--radius-full); font-size: 13px; line-height: 16px; font-weight: 600; white-space: nowrap; background: var(--color-divider); color: var(--color-text-secondary); }
+.badge.info { background: var(--color-primary-light); color: var(--color-primary); }
 .badge.success { background: var(--color-success-bg); color: var(--color-success); }
 .badge.warning { background: var(--color-warning-bg); color: var(--color-warning); }
 .badge.error { background: var(--color-error-bg); color: var(--color-error); }
@@ -67,13 +68,21 @@ h2 { margin: 0 0 var(--space-12); font-size: 18px; font-weight: 600; }
 .alert.error strong { color: var(--color-error); }
 .alert.neutral { background: #F1F1EF; }
 .alert.info { background: var(--color-primary-subtle); }
+.alert-banner { display: flex; align-items: center; gap: var(--space-12); padding: var(--space-12) var(--space-16); background: var(--color-warning-bg); border-radius: var(--radius-8); color: var(--color-warning); }
+.alert-banner .alert-text { flex: 1; }
+.alert-banner strong { font-weight: 600; }
+.alert-banner .btn-secondary { background: transparent; border-color: var(--color-warning); color: var(--color-warning); }
 
 /* Controls */
 .segmented { display: inline-flex; gap: var(--space-4); padding: var(--space-4); border: 1px solid var(--color-border-strong); border-radius: var(--radius-8); background: var(--color-surface); }
 .segmented button { font: inherit; font-weight: 600; border: none; background: none; padding: var(--space-8) 14px; border-radius: var(--radius-6); cursor: pointer; color: var(--color-text-secondary); }
 .segmented button.on { background: var(--color-primary); color: #FFFFFF; }
-.chip { font: inherit; font-size: 14px; font-weight: 600; padding: 6px 14px; border-radius: var(--radius-full); border: 1px solid var(--color-border-strong); background: var(--color-surface); color: var(--color-text-secondary); }
-.chip.on { border-color: var(--color-primary); background: var(--color-primary-light); color: var(--color-primary); }
+.chips { display: flex; flex-wrap: wrap; gap: var(--space-8); }
+.chip { font: inherit; font-size: 14px; line-height: 20px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 var(--space-12); border-radius: var(--radius-full); border: 1px solid var(--color-border-strong); background: var(--color-surface); color: var(--color-text); cursor: pointer; }
+.chip:hover { border-color: var(--color-text-muted); }
+.chip:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-primary); }
+.chip.on { border-color: var(--color-primary); background: var(--color-primary-light); color: var(--color-primary-dark); }
+.chip-count { font-size: 13px; color: var(--color-text-muted); }
 .input, .select { font: inherit; font-size: 15px; line-height: 22px; height: 40px; width: 100%; padding: 0 var(--space-12); border: 1px solid var(--color-border-strong); border-radius: var(--radius-6); background: var(--color-surface); color: var(--color-text); }
 .input:hover:not(:disabled) { border-color: var(--color-text-muted); }
 .input:focus, .input-affix:focus-within { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 1px var(--color-primary); }
