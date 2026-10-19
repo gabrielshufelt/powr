@@ -54,6 +54,14 @@ def get_current_user(
     if not session_data:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=UNAUTHENTICATED_ERROR)
 
+    try:
+        user_id = UUID(str(session_data["user_id"]))
+        restaurant_id = UUID(str(session_data["restaurant_id"]))
+    except (KeyError, ValueError) as error:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail=UNAUTHENTICATED_ERROR
+        ) from error
+
     row = db.execute(
         text(
             """
