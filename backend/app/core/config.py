@@ -29,7 +29,10 @@ class Settings(BaseSettings):
     # set to false for now since not in prod, in thprod we must use True or a dynamic check
     cookie_secure: bool = False
     cookie_samesite: Literal["lax", "strict", "none"] = "lax"
-    login_rate_limit: str = "5/minute"
+
+    # Failed login rate-limiting settings (5 failed attempts per 60 seconds)
+    login_max_failed_attempts: int = 5
+    login_lockout_window_seconds: int = 60
 
 
 @lru_cache

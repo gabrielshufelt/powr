@@ -37,5 +37,13 @@ class LoginResponse(BaseModel):
     message: str = "Logged in successfully."
 
 
+class MeResponse(BaseModel):
+    user_id: UUID
+    restaurant_id: UUID
+    restaurant_name: str
+    email: EmailStr
+    role: str
+
+
 class LogoutResponse(BaseModel):
     message: str = "Logged out successfully."

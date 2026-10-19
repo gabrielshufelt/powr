@@ -1,13 +1,11 @@
 # Source-File AI Declaration
 # AI contribution: 50% or more AI-generated
-"""Authentication endpoints: sign-up, login, and logout."""
+"""Authentication endpoints: sign-up, login, logout, and current session (/me)."""
 
 import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -16,29 +14,44 @@ from app.core.config import Settings, get_settings
 from app.core.database import get_db
 from app.core.security import (
     DUMMY_PASSWORD_HASH,
+    clear_failed_logins,
     create_session_token,
     hash_password,
+    is_login_rate_limited,
+    record_failed_login,
     revoke_session_token,
     validate_password_policy,
     verify_password,
+    verify_session_token,
 )
 from app.schemas.auth import (
     LoginRequest,
     LoginResponse,
     LogoutResponse,
+    MeResponse,
     SignupRequest,
     SignupResponse,
 )
 
 logger = logging.getLogger(__name__)
 
-limiter = Limiter(key_func=get_remote_address)
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 GENERIC_AUTH_ERROR = "Invalid email or password."
+RATE_LIMIT_ERROR = "Too many failed login attempts. Please try again later."
+UNAUTHENTICATED_ERROR = "Not authenticated."
 
 DbSession = Annotated[Session, Depends(get_db)]
 AppSettings = Annotated[Settings, Depends(get_settings)]
+
+
+def _get_client_ip(request: Request) -> str:
+    forwarded_for = request.headers.get("x-forwarded-for")
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip()
+    if request.client and request.client.host:
+        return request.client.host
+    return "unknown"
 
 
 def _set_session_cookie(response: Response, token: str, settings: Settings) -> None:
@@ -90,6 +103,10 @@ def signup(
             {"email": normalized_email},
         ).first()
         if existing_user is not None:
+            logger.warning(
+                "Sign-up rejected: account already exists (user_id=%s)",
+                existing_user.id,
+            )
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Unable to complete sign-up with the provided credentials.",
@@ -146,11 +163,18 @@ def signup(
         )
 
         db.commit()
+        logger.info(
+            "Sign-up succeeded (user_id=%s, restaurant_id=%s, role=%s)",
+            user_row.id,
+            restaurant_row.id,
+            role,
+        )
     except HTTPException:
         db.rollback()
         raise
     except IntegrityError as exc:
         db.rollback()
+        logger.warning("Sign-up failed due to database integrity constraint")
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Unable to complete sign-up with the provided credentials.",
@@ -181,7 +205,6 @@ def signup(
 
 
 @router.post("/login", response_model=LoginResponse, status_code=status.HTTP_200_OK)
-@limiter.limit("5/minute")
 def login(
     request: Request,
     payload: LoginRequest,
@@ -190,6 +213,19 @@ def login(
     settings: AppSettings,
 ) -> LoginResponse:
     normalized_email = payload.email.strip().lower()
+    client_ip = _get_client_ip(request)
+
+    if is_login_rate_limited(
+        client_ip=client_ip,
+        email=normalized_email,
+        max_attempts=settings.login_max_failed_attempts,
+        window_seconds=settings.login_lockout_window_seconds,
+    ):
+        logger.warning("Login rate limit exceeded (client_ip=%s)", client_ip)
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=RATE_LIMIT_ERROR,
+        )
 
     row = db.execute(
         text(
@@ -212,16 +248,39 @@ def login(
     if row is None:
         # Constant-time dummy check to mitigate user enumeration via timing side-channels
         verify_password(payload.password, DUMMY_PASSWORD_HASH)
+        failures = record_failed_login(
+            client_ip=client_ip,
+            email=normalized_email,
+            window_seconds=settings.login_lockout_window_seconds,
+        )
+        logger.warning(
+            "Login failed: unknown user (client_ip=%s, failed_attempts=%d)",
+            client_ip,
+            failures,
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=GENERIC_AUTH_ERROR,
         )
 
     if not verify_password(payload.password, row.password_hash):
+        failures = record_failed_login(
+            client_ip=client_ip,
+            email=normalized_email,
+            window_seconds=settings.login_lockout_window_seconds,
+        )
+        logger.warning(
+            "Login failed: invalid password (user_id=%s, client_ip=%s, failed_attempts=%d)",
+            row.user_id,
+            client_ip,
+            failures,
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=GENERIC_AUTH_ERROR,
         )
+
+    clear_failed_logins(client_ip=client_ip, email=normalized_email)
 
     token = create_session_token(
         user_id=str(row.user_id),
@@ -231,9 +290,71 @@ def login(
     )
     _set_session_cookie(response, token, settings)
 
+    logger.info(
+        "Login succeeded (user_id=%s, restaurant_id=%s, role=%s)",
+        row.user_id,
+        row.restaurant_id,
+        row.role,
+    )
+
     return LoginResponse(
         user_id=row.user_id,
         restaurant_id=row.restaurant_id,
+        email=row.email,
+        role=row.role,
+    )
+
+
+@router.get("/me", response_model=MeResponse, status_code=status.HTTP_200_OK)
+def get_me(
+    request: Request,
+    db: DbSession,
+    settings: AppSettings,
+) -> MeResponse:
+    token = request.cookies.get(settings.session_cookie_name)
+    session_data = verify_session_token(
+        token=token or "",
+        secret_key=settings.session_secret_key,
+        max_age=settings.session_max_age_seconds,
+    )
+    if not session_data:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=UNAUTHENTICATED_ERROR,
+        )
+
+    row = db.execute(
+        text(
+            """
+            SELECT u.id AS user_id,
+                   u.email,
+                   r.id AS restaurant_id,
+                   r.name AS restaurant_name,
+                   rm.role
+            FROM users u
+            JOIN restaurant_memberships rm ON rm.user_id = u.id
+            JOIN restaurants r ON r.id = rm.restaurant_id
+            WHERE u.id = :user_id
+              AND r.id = :restaurant_id
+            LIMIT 1
+            """
+        ),
+        {
+            "user_id": session_data["user_id"],
+            "restaurant_id": session_data["restaurant_id"],
+        },
+    ).first()
+
+    if row is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=UNAUTHENTICATED_ERROR,
+        )
+
+    return MeResponse(
+        user_id=row.user_id,
+        restaurant_id=row.restaurant_id,
+        restaurant_name=row.restaurant_name,
         email=row.email,
         role=row.role,
     )
@@ -247,7 +368,16 @@ def logout(
 ) -> LogoutResponse:
     token = request.cookies.get(settings.session_cookie_name)
     if token:
+        session_data = verify_session_token(
+            token=token,
+            secret_key=settings.session_secret_key,
+            max_age=settings.session_max_age_seconds,
+        )
         revoke_session_token(token)
+        if session_data and "user_id" in session_data:
+            logger.info("Logout succeeded (user_id=%s)", session_data["user_id"])
+        else:
+            logger.info("Logout called with expired or invalid session token")
 
     response.delete_cookie(
         key=settings.session_cookie_name,

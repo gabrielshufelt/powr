@@ -4,6 +4,8 @@
 
 import re
 import secrets
+import time
+from collections import defaultdict, deque
 from typing import Any
 
 from argon2 import PasswordHasher, Type
@@ -13,6 +15,8 @@ from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from app.core.config import get_settings
 
 # Explicitly configure Argon2id
+# NOTE: Tune `parallelism` to match the number of available CPU cores on the
+# production auth server when releasing to prod.
 _password_hasher = PasswordHasher(
     time_cost=3,
     memory_cost=65536,
@@ -27,6 +31,10 @@ DUMMY_PASSWORD_HASH = _password_hasher.hash("DummyTimingProtection!123")
 
 # Server-side revocation set for invalidated session tokens before their TTL expires.
 _revoked_tokens: set[str] = set()
+
+# Sliding-window tracker of failed login timestamps keyed by (client_ip, normalized_email)
+# so kitchen staff sharing Wi-Fi are not locked out by others' activity or successful logins.
+_failed_login_attempts: dict[tuple[str, str], deque[float]] = defaultdict(deque)
 
 SESSION_SALT = "powr-auth-session-v1"
 
@@ -114,3 +122,58 @@ def revoke_session_token(token: str) -> None:
     """Marks a session token as revoked on the server."""
     if token:
         _revoked_tokens.add(token)
+
+
+def _prune_expired_attempts(attempts: deque[float], now: float, window_seconds: int) -> None:
+    cutoff = now - window_seconds
+    while attempts and attempts[0] <= cutoff:
+        attempts.popleft()
+
+
+def is_login_rate_limited(
+    client_ip: str,
+    email: str,
+    max_attempts: int | None = None,
+    window_seconds: int | None = None,
+) -> bool:
+    """Checks if (client_ip, email) has reached the failed login limit in the active window."""
+    settings = get_settings()
+    limit = max_attempts if max_attempts is not None else settings.login_max_failed_attempts
+    window = window_seconds if window_seconds is not None else settings.login_lockout_window_seconds
+
+    key = (client_ip, email.strip().lower())
+    attempts = _failed_login_attempts.get(key)
+    if not attempts:
+        return False
+
+    _prune_expired_attempts(attempts, time.monotonic(), window)
+    if not attempts:
+        _failed_login_attempts.pop(key, None)
+        return False
+
+    return len(attempts) >= limit
+
+
+def record_failed_login(
+    client_ip: str,
+    email: str,
+    window_seconds: int | None = None,
+) -> int:
+    """Records a failed login attempt and returns the active failure count."""
+    window = (
+        window_seconds
+        if window_seconds is not None
+        else get_settings().login_lockout_window_seconds
+    )
+    now = time.monotonic()
+    key = (client_ip, email.strip().lower())
+    attempts = _failed_login_attempts[key]
+    _prune_expired_attempts(attempts, now, window)
+    attempts.append(now)
+    return len(attempts)
+
+
+def clear_failed_logins(client_ip: str, email: str) -> None:
+    """Clears recorded failed login attempts after a successful login."""
+    key = (client_ip, email.strip().lower())
+    _failed_login_attempts.pop(key, None)
