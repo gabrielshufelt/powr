@@ -10,6 +10,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from app.core.auth import CurrentUserDep
 from app.core.config import Settings, get_settings
 from app.core.database import get_db
 from app.core.security import (
@@ -39,7 +40,6 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 GENERIC_AUTH_ERROR = "Invalid email or password."
 RATE_LIMIT_ERROR = "Too many failed login attempts. Please try again later."
-UNAUTHENTICATED_ERROR = "Not authenticated."
 
 DbSession = Annotated[Session, Depends(get_db)]
 AppSettings = Annotated[Settings, Depends(get_settings)]
@@ -306,57 +306,13 @@ def login(
 
 
 @router.get("/me", response_model=MeResponse, status_code=status.HTTP_200_OK)
-def get_me(
-    request: Request,
-    db: DbSession,
-    settings: AppSettings,
-) -> MeResponse:
-    token = request.cookies.get(settings.session_cookie_name)
-    session_data = verify_session_token(
-        token=token or "",
-        secret_key=settings.session_secret_key,
-        max_age=settings.session_max_age_seconds,
-    )
-    if not session_data:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=UNAUTHENTICATED_ERROR,
-        )
-
-    row = db.execute(
-        text(
-            """
-            SELECT u.id AS user_id,
-                   u.email,
-                   r.id AS restaurant_id,
-                   r.name AS restaurant_name,
-                   rm.role
-            FROM users u
-            JOIN restaurant_memberships rm ON rm.user_id = u.id
-            JOIN restaurants r ON r.id = rm.restaurant_id
-            WHERE u.id = :user_id
-              AND r.id = :restaurant_id
-            LIMIT 1
-            """
-        ),
-        {
-            "user_id": session_data["user_id"],
-            "restaurant_id": session_data["restaurant_id"],
-        },
-    ).first()
-
-    if row is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=UNAUTHENTICATED_ERROR,
-        )
-
+def get_me(user: CurrentUserDep) -> MeResponse:
     return MeResponse(
-        user_id=row.user_id,
-        restaurant_id=row.restaurant_id,
-        restaurant_name=row.restaurant_name,
-        email=row.email,
-        role=row.role,
+        user_id=user.user_id,
+        restaurant_id=user.restaurant_id,
+        restaurant_name=user.restaurant_name,
+        email=user.email,
+        role=user.role,
     )
 
 
