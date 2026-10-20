@@ -89,7 +89,7 @@ export function MenuMapping() {
           {readOnly && (
             <div className="note"><Icon name="info" />Removed from the POS. Mapping is kept for past sales.</div>
           )}
-          <IngredientsCard dish={dish} items={items} vendors={vendors} readOnly={readOnly} onChange={setDraft} />
+          <IngredientsCard key={dish.id} dish={dish} items={items} vendors={vendors} readOnly={readOnly} onChange={setDraft} />
           <ModifiersCard dish={dish} items={items} readOnly={readOnly} onEdit={setEditing} />
           <div className="editor-footer">
             <span className="caption">Changes apply to sales and forecasts from now on. Past calculations stay as they were.</span>
