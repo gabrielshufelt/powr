@@ -3,9 +3,6 @@
 
 export type PageId = 'home' | 'orders' | 'forecast' | 'menu' | 'inventory' | 'settings'
 
-// Demo switch for the mockup: shows each page's empty, loading and error versions.
-export type PageState = 'ready' | 'empty' | 'loading' | 'error'
-
 export const NAV: { id: PageId; label: string }[] = [
   { id: 'home', label: 'Home' },
   { id: 'orders', label: 'Recommended Orders' },
