@@ -83,8 +83,3 @@ tr.edited .qty { border: 2px solid var(--color-primary); }
 .setting { display: flex; justify-content: space-between; align-items: center; padding: var(--space-16) var(--space-20); border-bottom: 1px solid var(--color-divider); gap: var(--space-16); }
 .setting:last-child { border-bottom: none; }
 
-/* Page states and the demo switch */
-.page-state { padding: 48px; text-align: center; color: var(--color-text-muted); }
-.page-state.error { color: var(--color-error); background: var(--color-error-bg); border-radius: var(--radius-8); }
-.demo { position: fixed; right: var(--space-16); bottom: var(--space-16); background: var(--color-text); color: #FFFFFF; padding: 10px var(--space-12); border-radius: var(--radius-8); font-size: 13px; display: flex; gap: var(--space-8); align-items: center; }
-.demo select { font: inherit; }
