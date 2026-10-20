@@ -70,7 +70,7 @@ export function MenuMapping() {
       <div className="split">
         <section className="card flush dish-panel" aria-label="Menu items">
           <div className="panel-filters">
-            <SearchField label="Search menu items" placeholder="e.g. fries" value={query} onChange={setQuery} />
+            <SearchField label="Search menu items" placeholder="e.g. souvlaki" value={query} onChange={setQuery} />
             <FilterChips
               label="Filter by status"
               value={filter}

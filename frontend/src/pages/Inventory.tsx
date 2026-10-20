@@ -61,7 +61,7 @@ export function Inventory() {
 
       <section className="card flush" aria-label="Inventory items">
         <div className="filter-bar">
-          <SearchField className="w-320" label="Search items" placeholder="e.g. potato" value={query} onChange={setQuery} />
+          <SearchField className="w-320" label="Search items" placeholder="e.g. feta" value={query} onChange={setQuery} />
           <Select
             className="w-200"
             label="Vendor"

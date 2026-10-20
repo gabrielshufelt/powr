@@ -3,6 +3,8 @@
 
 import type { Dish, DishIngredient, Modifier, Unit } from './types'
 
+// The dishes on the Home mockup, with their main ingredients; quantities are realistic fill-ins.
+
 function ing(itemId: string, quantity: number, unit: Unit): DishIngredient {
   return { itemId, quantity, unit }
 }
@@ -17,50 +19,30 @@ function swap(id: string, name: string, replacesItemId: string, itemId: string, 
 
 export const DISHES: Dish[] = [
   {
-    id: 'd-fries', name: 'Classic Fries', category: 'Sides', removedFromPos: false,
-    ingredients: [ing('i-potato', 200, 'g'), ing('i-oil', 30, 'ml'), ing('i-salt', 2, 'g')],
+    id: 'd-souvlaki', name: 'Chicken Souvlaki Plate', category: 'Mains', removedFromPos: false,
+    ingredients: [ing('i-chicken', 200, 'g'), ing('i-pita', 1, 'each'), ing('i-tzatziki', 60, 'g')],
     modifiers: [
-      addOn('m-fries-cheese', 'Cheese powder', 'i-cheese-powder', 30, 'g'),
-      swap('m-fries-sweet', 'Sweet potato fries', 'i-potato', 'i-sweet-potato', 200, 'g'),
-      addOn('m-fries-truffle', 'Truffle oil drizzle', null, null, null),
+      addOn('m-souvlaki-tzatziki', 'Extra tzatziki', 'i-tzatziki', 40, 'g'),
+      swap('m-souvlaki-rice', 'Rice instead of pita', 'i-pita', 'i-rice', 150, 'g'),
+      addOn('m-souvlaki-lemon', 'Lemon wedges', null, null, null),
     ],
   },
   {
-    id: 'd-burger', name: 'Cheeseburger', category: 'Mains', removedFromPos: false,
-    ingredients: [ing('i-beef', 150, 'g'), ing('i-buns', 1, 'each'), ing('i-cheddar', 40, 'g'),
-      ing('i-lettuce', 20, 'g'), ing('i-tomato', 30, 'g'), ing('i-onion', 15, 'g')],
+    id: 'd-gyro', name: 'Doner Gyro Pita', category: 'Mains', removedFromPos: false,
+    ingredients: [ing('i-lamb', 150, 'g'), ing('i-pita', 1, 'each'), ing('i-onion', 20, 'g')],
     modifiers: [
-      addOn('m-burger-cheese', 'Extra cheese', 'i-cheddar', 30, 'g'),
-      addOn('m-burger-patty', 'Double patty', 'i-beef', 150, 'g'),
-      addOn('m-burger-pickles', 'Add pickles', 'i-pickles', 20, 'g'),
-      swap('m-burger-wrap', 'Lettuce wrap', 'i-buns', 'i-lettuce', 60, 'g'),
+      addOn('m-gyro-feta', 'Add feta', 'i-feta', 30, 'g'),
+      swap('m-gyro-chicken', 'Chicken instead of lamb', 'i-lamb', 'i-chicken', 150, 'g'),
     ],
   },
   {
-    id: 'd-poutine', name: 'Poutine', category: 'Mains', removedFromPos: false,
-    ingredients: [ing('i-potato', 250, 'g'), ing('i-oil', 35, 'ml'), ing('i-curds', 80, 'g'), ing('i-gravy', 120, 'ml')],
-    modifiers: [],
+    id: 'd-horiatiki', name: 'Horiatiki Salad', category: 'Salads', removedFromPos: false,
+    ingredients: [ing('i-tomato', 150, 'g'), ing('i-cucumber', 100, 'g'), ing('i-feta', 60, 'g')],
+    modifiers: [addOn('m-horiatiki-chicken', 'Add grilled chicken', 'i-chicken', 120, 'g')],
   },
   {
-    id: 'd-salad', name: 'Garden Salad', category: 'Sides', removedFromPos: false,
-    ingredients: [ing('i-lettuce', 120, 'g'), ing('i-tomato', 60, 'g'), ing('i-onion', 20, 'g'),
-      ing('i-dressing', 30, 'ml'), ing('i-salt', 1, 'g')],
-    modifiers: [
-      addOn('m-salad-chicken', 'Add chicken', 'i-chicken', 100, 'g'),
-      addOn('m-salad-dressing', 'Extra dressing', 'i-dressing', 30, 'ml'),
-    ],
-  },
-  { id: 'd-wrap', name: 'Chicken Wrap', category: 'Mains', removedFromPos: false, ingredients: [], modifiers: [] },
-  {
-    id: 'd-rings', name: 'Onion Rings', category: 'Sides', removedFromPos: false,
-    ingredients: [ing('i-onion', 150, 'g'), ing('i-flour', 40, 'g'), ing('i-oil', 40, 'ml')],
-    modifiers: [],
-  },
-  { id: 'd-soup', name: 'Seasonal Soup', category: 'Starters', removedFromPos: false, ingredients: [], modifiers: [] },
-  { id: 'd-tea', name: 'Iced Tea', category: 'Drinks', removedFromPos: false, ingredients: [], modifiers: [] },
-  {
-    id: 'd-tacos', name: 'Fish Tacos', category: 'Mains', removedFromPos: true,
-    ingredients: [ing('i-tortilla', 3, 'each'), ing('i-lettuce', 30, 'g')],
-    modifiers: [],
+    id: 'd-dolmades', name: 'Dolmades', category: 'Starters', removedFromPos: false,
+    ingredients: [ing('i-grape-leaves', 40, 'g'), ing('i-rice', 60, 'g'), ing('i-lemon', 15, 'g')],
+    modifiers: [addOn('m-dolmades-yogurt', 'Yogurt dip', 'i-yogurt', 50, 'g')],
   },
 ]
