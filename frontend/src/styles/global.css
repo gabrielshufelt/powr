@@ -1,0 +1,55 @@
+/* Design tokens from docs/design/foundations/POWR_Design_foundations.pdf */
+:root {
+  --color-primary: #2f5d8a;
+  --color-primary-dark: #1e3f60;
+  --color-primary-light: #e6edf5;
+  --color-primary-subtle: #f3f6fa;
+
+  --color-text: #1f1f1e;
+  --color-text-secondary: #3d3d3a;
+  --color-text-muted: #5e5e5a;
+  --color-border-strong: #bdbdb8;
+  --color-border: #d9d9d6;
+  --color-divider: #eeeeec;
+  --color-background: #f6f6f4;
+  --color-surface: #ffffff;
+
+  --color-success: #1f5f33;
+  --color-success-bg: #e3f0e6;
+  --color-warning: #8a4508;
+  --color-warning-bg: #fbefe2;
+  --color-error: #a32d2d;
+  --color-error-bg: #fbe9e9;
+  --color-highlight: #d98e04;
+
+  --font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --radius-control: 6px;
+  --radius-card: 8px;
+  --radius-full: 9999px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: 15px;
+  line-height: 22px;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font: inherit;
+}
