@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import type { AuthUser } from './api/auth'
+import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 
@@ -24,11 +25,7 @@ function App() {
         path="/"
         element={
           user ? (
-            // Placeholder until the dashboard exists.
-            <main>
-              <h1>powr</h1>
-              <p>Logged in as {user.email}</p>
-            </main>
+            <HomePage user={user} onLoggedOut={() => setUser(null)} />
           ) : (
             <Navigate to="/login" replace />
           )
