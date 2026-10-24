@@ -92,13 +92,6 @@ function LoginPage({ onLoggedIn }: LoginPageProps) {
         <Link to="/forgot-password" className="auth-link forgot-link">Forgot password?</Link>
 
         <SubmitButton pending={submitting} label="Log in" pendingLabel="Logging in…" />
-
-        {/* TEMPORARY: lets the mockups be reached while login/signup aren't functional.
-            Remove this link, its .temp-dashboard-link style and the /dashboard route in App.tsx
-            once login/register are implemented. */}
-        <Link to="/dashboard" className="btn btn-secondary temp-dashboard-link">
-          Go to Dashboard
-        </Link>
       </form>
     </AuthLayout>
   )

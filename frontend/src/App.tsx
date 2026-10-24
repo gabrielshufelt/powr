@@ -57,9 +57,6 @@ function App() {
         element={user ? <Navigate to="/" replace /> : <SignupPage onSignedUp={setUser} />}
       />
       <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" replace />} />
-      {/* TEMPORARY: ungated dashboard behind the login page's "Go to Dashboard" link.
-          Remove once login/register are implemented. */}
-      <Route path="/dashboard" element={<Dashboard />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
