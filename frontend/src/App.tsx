@@ -56,8 +56,10 @@ function App() {
         path="/signup"
         element={user ? <Navigate to="/" replace /> : <SignupPage onSignedUp={setUser} />}
       />
-      {/* Not gated by auth yet: login/signup aren't functional, so the mockups stay reachable. */}
-      <Route path="/" element={<Dashboard />} />
+      <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" replace />} />
+      {/* TEMPORARY: ungated dashboard behind the login page's "Go to Dashboard" link.
+          Remove once login/register are implemented. */}
+      <Route path="/dashboard" element={<Dashboard />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

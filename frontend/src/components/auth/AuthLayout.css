@@ -307,3 +307,10 @@
   border: none;
   cursor: pointer;
 }
+
+/* TEMPORARY: "Go to Dashboard" link on the login page. Remove once login/register are implemented. */
+.temp-dashboard-link {
+  height: 44px;
+  margin-top: 12px;
+  text-decoration: none;
+}
