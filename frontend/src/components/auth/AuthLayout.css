@@ -1,0 +1,309 @@
+.auth-page {
+  min-height: 100vh;
+  padding: 40px 16px;
+}
+
+.auth-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 500px;
+  margin: 56px auto 0;
+}
+
+.auth-brand {
+  margin: 0 0 32px;
+  color: var(--color-primary-dark);
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.auth-card {
+  width: 100%;
+  padding: 40px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-8);
+}
+
+.auth-heading {
+  margin: 0 0 8px;
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 600;
+}
+
+.auth-subheading {
+  margin: 0 0 24px;
+  color: var(--color-text-muted);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.field-label {
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+.field-input {
+  height: 44px;
+  padding: 0 12px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-6);
+}
+
+.field-control {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.field-control:has(.password-toggle) .field-input {
+  padding-right: 48px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  border-radius: var(--radius-6);
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  color: var(--color-text);
+  background: var(--color-primary-subtle);
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.eye-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.field-input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.8;
+}
+
+.field-input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -1px;
+  border-color: var(--color-primary);
+}
+
+.field-input[aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+
+.field-input[aria-invalid='true']:focus {
+  outline-color: var(--color-error);
+}
+
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 0;
+  color: var(--color-error);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.field-hint {
+  margin: 6px 0 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.alert-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.checkbox-field {
+  margin-bottom: 20px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.checkbox-label input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--color-primary);
+}
+
+.checkbox-label input[aria-invalid='true'] {
+  outline: 2px solid var(--color-error);
+  outline-offset: 1px;
+}
+
+.auth-link {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.auth-link:hover {
+  color: var(--color-primary-dark);
+}
+
+.forgot-link {
+  align-self: flex-end;
+  margin: -4px 0 20px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.auth-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 44px;
+  color: #ffffff;
+  font-weight: 500;
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-6);
+  cursor: pointer;
+}
+
+.auth-button:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.auth-button:focus-visible {
+  outline: 2px solid var(--color-primary-dark);
+  outline-offset: 2px;
+}
+
+.auth-button:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgb(255 255 255 / 0.4);
+  border-top-color: #ffffff;
+  border-radius: var(--radius-full);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+.auth-footer {
+  margin: 24px 0 0;
+  color: var(--color-text-muted);
+}
+
+.auth-footer .auth-link {
+  font-weight: 500;
+}
+
+.auth-alert {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  max-width: min(400px, calc(100vw - 32px));
+  padding: 12px 16px;
+  color: var(--color-error);
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-8);
+}
+
+.auth-alert .alert-icon {
+  margin-top: 3px;
+}
+
+.auth-alert-title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.auth-alert-body {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 480px) {
+  .auth-main {
+    margin-top: 16px;
+  }
+
+  .auth-card {
+    padding: 24px;
+  }
+
+  /* A fixed alert would cover the brand on small screens; keep it in the page flow. */
+  .auth-alert {
+    position: static;
+    max-width: none;
+    margin-bottom: 16px;
+  }
+}
+
+/* A button that opens something in place but reads as an inline link. */
+.link-button {
+  padding: 0;
+  font: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}

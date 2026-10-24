@@ -2,8 +2,10 @@
 // AI contribution: 50% or more AI-generated
 
 import { useState, type ReactNode } from 'react'
+import { Navigate, Route, Routes } from 'react-router'
 import './styles/tokens.css'
 import './styles/global.css'
+import type { AuthUser } from './api/auth'
 import { Sidebar } from './layout/Sidebar'
 import type { PageId } from './layout/navigation'
 import { ToastProvider } from './components/Toast'
@@ -14,8 +16,10 @@ import { Forecast } from './pages/Forecast'
 import { MenuMapping } from './pages/MenuMapping'
 import { Inventory } from './pages/Inventory'
 import { Settings } from './pages/Settings'
+import LoginPage from './pages/LoginPage'
+import SignupPage from './pages/SignupPage'
 
-function App() {
+function Dashboard() {
   const [page, setPage] = useState<PageId>('home')
 
   const pages: Record<PageId, ReactNode> = {
@@ -36,6 +40,26 @@ function App() {
         </div>
       </ToastProvider>
     </MockDataProvider>
+  )
+}
+
+function App() {
+  const [user, setUser] = useState<AuthUser | null>(null)
+
+  return (
+    <Routes>
+      <Route
+        path="/login"
+        element={user ? <Navigate to="/" replace /> : <LoginPage onLoggedIn={setUser} />}
+      />
+      <Route
+        path="/signup"
+        element={user ? <Navigate to="/" replace /> : <SignupPage onSignedUp={setUser} />}
+      />
+      {/* Not gated by auth yet: login/signup aren't functional, so the mockups stay reachable. */}
+      <Route path="/" element={<Dashboard />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 
