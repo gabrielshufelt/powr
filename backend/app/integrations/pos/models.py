@@ -23,6 +23,8 @@ class MenuItem(BaseModel):
     restaurant_id: UUID
     item_id: str = Field(min_length=1, max_length=255)
     item_name: str = Field(min_length=1, max_length=255)
+    price: Decimal = Field(gt=Decimal("0"), allow_inf_nan=False)
+    currency: str = Field(min_length=1, max_length=3)
 
 class SaleLine(BaseModel):
     """One sold menu item, normalized from a provider's order."""
@@ -52,4 +54,5 @@ class StockItem(BaseModel):
     restaurant_id: UUID
     item_id: str = Field(min_length=1, max_length=255)
     item_name: str = Field(min_length=1, max_length=255)
-    quantity: Decimal = Field(ge=Decimal("0"), allow_inf_nan=False)
+    quantity: Decimal | None = Field(default=None, allow_inf_nan=False)
+    is_available: bool | None = None
