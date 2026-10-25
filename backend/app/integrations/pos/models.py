@@ -4,6 +4,7 @@ from uuid import UUID
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
 
+
 class PosConnection(BaseModel):
     """Connection to a POS locaiton"""
 
@@ -13,6 +14,7 @@ class PosConnection(BaseModel):
     restaurant_id: UUID
     provider: str = Field(min_length=1, max_length=255)
     location_id: str = Field(min_length=1, max_length=255)
+
 
 class MenuItem(BaseModel):
     """Meny item of POS System"""
@@ -25,6 +27,7 @@ class MenuItem(BaseModel):
     item_name: str = Field(min_length=1, max_length=255)
     price: Decimal = Field(gt=Decimal("0"), allow_inf_nan=False)
     currency: str = Field(min_length=1, max_length=3)
+
 
 class SaleLine(BaseModel):
     """One sold menu item, normalized from a provider's order."""
@@ -44,6 +47,7 @@ class SaleLine(BaseModel):
     @classmethod
     def normalize_timestamp(cls, value: datetime) -> datetime:
         return value.astimezone(UTC)
+
 
 class StockItem(BaseModel):
     """Stock item of POS System"""

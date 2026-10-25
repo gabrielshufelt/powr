@@ -3,6 +3,7 @@ from datetime import datetime
 
 from app.integrations.pos.models import MenuItem, PosConnection, SaleLine, StockItem
 
+
 class PosAdapter(ABC):
     """Abstract class for POS adapters"""
 
