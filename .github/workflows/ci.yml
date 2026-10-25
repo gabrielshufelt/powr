@@ -125,4 +125,11 @@ jobs:
 
       - name: Run unit and integration tests
         working-directory: backend
-        run: pytest
+        run: pytest --cov=app --cov-report=xml
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: backend/coverage.xml
+          flags: backend
