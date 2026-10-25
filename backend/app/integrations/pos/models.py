@@ -1,3 +1,6 @@
+# Source-File AI Declaration
+# AI contribution: 50% or more AI-generated
+
 from datetime import UTC, datetime
 from decimal import Decimal
 from uuid import UUID

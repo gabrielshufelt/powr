@@ -1,3 +1,6 @@
+# Source-File AI Declaration
+# AI contribution: 50% or more AI-generated
+
 from abc import ABC, abstractmethod
 from datetime import datetime
 
