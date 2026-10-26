@@ -18,7 +18,7 @@ h3 { margin: 0; font-size: 18px; line-height: 24px; font-weight: 600; }
 .nav-item.active { background: var(--color-primary-light); color: var(--color-primary); font-weight: 600; }
 .content { flex: 1; min-width: 0; padding: var(--space-32) var(--space-40) 96px; display: flex; flex-direction: column; gap: var(--space-24); }
 .header { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--space-16); flex-wrap: wrap; }
-.switcher { font: inherit; font-size: 14px; font-weight: 600; color: var(--color-text-secondary); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-6); padding: var(--space-4) 10px; }
+.switcher { font: inherit; font-size: 14px; font-weight: 600; color: var(--color-text-secondary); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-6); padding: var(--space-4) 10px; margin-bottom: var(--space-12); }
 .subtitle { color: var(--color-text-muted); margin-top: var(--space-4); }
 .actions { display: flex; gap: var(--space-12); align-items: center; flex-wrap: wrap; }
 
