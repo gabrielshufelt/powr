@@ -1,0 +1,17 @@
+# Source-File AI Declaration
+# AI contribution: 50% or more AI-generated
+
+# Coverage gate for pull requests: combined backend + frontend coverage, and the lines a PR
+# changes, must stay at or above 80%.
+coverage:
+  status:
+    project:
+      default:
+        target: 80%
+    patch:
+      default:
+        target: 80%
+
+comment:
+  layout: "header, diff, flags"
+  require_base: false
