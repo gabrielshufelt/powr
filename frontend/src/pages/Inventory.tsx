@@ -14,6 +14,7 @@ import type { InventoryItem, Vendor } from '../mocks/types'
 import { filterItems, SORT_OPTIONS, type ItemSort } from './inventory/filterItems'
 import { ItemDialog } from './inventory/ItemDialog'
 import { ItemsTable } from './inventory/ItemsTable'
+import { isLowStock } from './inventory/lowStock'
 import { VendorDialog } from './inventory/VendorDialog'
 import { VendorsSection } from './inventory/VendorsSection'
 
@@ -24,6 +25,7 @@ export function Inventory() {
   const [vendorId, setVendorId] = useState('all')
   const [sort, setSort] = useState<ItemSort>('name')
   const [incompleteOnly, setIncompleteOnly] = useState(false)
+  const [lowStockOnly, setLowStockOnly] = useState(false)
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null)
   // undefined = closed, null = adding a new vendor
   const [editingVendor, setEditingVendor] = useState<Vendor | null | undefined>(undefined)
@@ -31,12 +33,15 @@ export function Inventory() {
   const incomplete = items.filter(isIncomplete).length
   // Once nothing is incomplete the filter would only show an empty table.
   const showIncomplete = incompleteOnly && incomplete > 0
-  const shown = filterItems(items, { query, vendorId, sort, incompleteOnly: showIncomplete })
+  const lowStock = items.filter(isLowStock).length
+  const showLowStock = lowStockOnly && lowStock > 0
+  const shown = filterItems(items, { query, vendorId, sort, incompleteOnly: showIncomplete, lowStockOnly: showLowStock })
 
   function clearFilters() {
     setQuery('')
     setVendorId('all')
     setIncompleteOnly(false)
+    setLowStockOnly(false)
   }
 
   return (
@@ -47,6 +52,17 @@ export function Inventory() {
         actions={<SyncStatus text={`Items synced ${formatTime(lastSync)}`}
           onSync={() => { syncNow(); showToast('Inventory synced') }} />}
       />
+
+      {lowStock > 0 && (
+        <Alert
+          title={`${plural(lowStock, 'item')} ${lowStock === 1 ? 'is' : 'are'} running low.`}
+          action={<Button size="sm" onClick={() => setLowStockOnly(!showLowStock)}>
+            {showLowStock ? 'Show all items' : 'Show low stock only'}
+          </Button>}
+        >
+          Order soon so you don't run out before the next delivery.
+        </Alert>
+      )}
 
       {incomplete > 0 && (
         <Alert

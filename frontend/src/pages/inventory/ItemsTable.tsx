@@ -5,6 +5,7 @@ import { Badge } from '../../components/Badge'
 import { Button } from '../../components/Button'
 import { formatLastCounted, formatPack, formatPricePerUnit, formatQty, isIncomplete, plural } from '../../mocks/helpers'
 import type { InventoryItem, Vendor } from '../../mocks/types'
+import { stockLevel } from './lowStock'
 
 function Cell({ value, num }: { value: string | null; num?: boolean }) {
   const classes = [num && 'num', value === null && 'missing'].filter(Boolean).join(' ')
@@ -37,6 +38,7 @@ export function ItemsTable({ items, vendors, onEdit }: {
         <tbody>
           {items.map((item) => {
             const incomplete = isIncomplete(item)
+            const level = stockLevel(item)
             const vendor = vendors.find((v) => v.id === item.vendorId)
             const rowClass = incomplete ? 'incomplete' : item.active ? undefined : 'inactive'
             return (
@@ -44,6 +46,8 @@ export function ItemsTable({ items, vendors, onEdit }: {
                 <td>
                   <span className="item-name">
                     <span className="strong">{item.name}</span>
+                    {level === 'out' && <Badge tone="error">Out of stock</Badge>}
+                    {level === 'low' && <Badge tone="warning">Low stock</Badge>}
                     {incomplete && <Badge tone="warning">Incomplete</Badge>}
                     {!item.active && <Badge tone="neutral">Inactive</Badge>}
                   </span>
