@@ -19,7 +19,9 @@ DEPLOYED_ENVIRONMENTS = frozenset({"staging", "production"})
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=ROOT_ENV_FILE, extra="ignore", hide_input_in_errors=True)
+    model_config = SettingsConfigDict(
+        env_file=ROOT_ENV_FILE, extra="ignore", hide_input_in_errors=True
+    )
     environment: Literal["development", "test", "staging", "production"] = "development"
     database_url: PostgresDsn
     cors_origins: list[str] = ["http://localhost:5173"]
@@ -40,19 +42,19 @@ class Settings(BaseSettings):
 
     git_commit: str | None = Field(default=None, validation_alias="RENDER_GIT_COMMIT")
 
-
     @model_validator(mode="after")
     def _require_safe_settings_when_deployed(self) -> Self:
-            """Refuse to start a deployed environment with the committed development defaults."""
-            if self.environment not in DEPLOYED_ENVIRONMENTS:
-                return self
-            if self.session_secret_key == DEV_SESSION_SECRET_KEY:
-                raise ValueError(
-                    f"SESSION_SECRET_KEY must be set to a private value when ENVIRONMENT={self.environment}"
-                )
-            if not self.cookie_secure:
-                raise ValueError(f"COOKIE_SECURE must be true when ENVIRONMENT={self.environment}")
+        """Refuse to start a deployed environment with the committed development defaults."""
+        if self.environment not in DEPLOYED_ENVIRONMENTS:
             return self
+        if self.session_secret_key == DEV_SESSION_SECRET_KEY:
+            raise ValueError(
+                "SESSION_SECRET_KEY must be set to a private value "
+                f"when ENVIRONMENT={self.environment}"
+            )
+        if not self.cookie_secure:
+            raise ValueError(f"COOKIE_SECURE must be true when ENVIRONMENT={self.environment}")
+        return self
 
 
 @lru_cache
