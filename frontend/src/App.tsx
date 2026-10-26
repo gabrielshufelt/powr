@@ -57,6 +57,7 @@ function App() {
         element={user ? <Navigate to="/" replace /> : <SignupPage onSignedUp={setUser} />}
       />
       <Route path="/" element={user ? <Dashboard /> : <Navigate to="/login" replace />} />
+      <Route path="/mockup" element={<Dashboard />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
