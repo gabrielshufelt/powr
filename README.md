@@ -1,6 +1,8 @@
 # POWR
 
-[![ci](https://github.com/gabrielshufelt/powr/actions/workflows/ci.yml/badge.svg)](https://github.com/gabrielshufelt/powr/actions/workflows/ci.yml)
+[![ci](https://github.com/powr-soen-490/powr/actions/workflows/ci.yml/badge.svg)](https://github.com/powr-soen-490/powr/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/powr-soen-490/powr/branch/master/graph/badge.svg)](https://codecov.io/gh/powr-soen-490/powr)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=powr-soen-490_powr&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=powr-soen-490_powr)
 
 Stack: React (TypeScript) frontend, FastAPI (Python) backend, PostgreSQL database.
 Architecture rules are in [`CLAUDE.md`](CLAUDE.md), and the AI declaration policy in
