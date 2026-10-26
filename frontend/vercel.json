@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://<render-service>.onrender.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://powr-backend-staging.onrender.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
