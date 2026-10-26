@@ -111,16 +111,10 @@ function VendorOrder({ order }: { order: Order }) {
   const missing = shortBy(order)
   return (
     <section className="card" style={{ padding: 0, overflow: 'hidden' }}>
-      <div className="header" style={{ alignItems: 'flex-start', padding: '16px 20px', borderBottom: '1px solid var(--color-divider)' }}>
-        <div>
-          <h2 style={{ fontSize: 20, marginBottom: 4 }}>{order.vendor} <StatusBadge approved={order.approved} /></h2>
-          <div className="label">
-            Delivery {order.delivery} · {order.minimum ? `Order minimum $${order.minimum}` : 'No order minimum'} · Lead time {plural(order.leadDays, 'day')}
-          </div>
-        </div>
-        <div style={{ textAlign: 'right' }}>
-          <div className="label">Order total</div>
-          <div style={{ fontSize: 24, fontWeight: 600 }}>${total(order)}</div>
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--color-divider)' }}>
+        <h2 style={{ fontSize: 20, marginBottom: 4 }}>{order.vendor} <StatusBadge approved={order.approved} /></h2>
+        <div className="label">
+          Delivery {order.delivery} · {order.minimum ? `Order minimum $${order.minimum}` : 'No order minimum'} · Lead time {plural(order.leadDays, 'day')}
         </div>
       </div>
 
@@ -139,6 +133,12 @@ function VendorOrder({ order }: { order: Order }) {
               </tr>
             ))}
           </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan={5} style={{ textAlign: 'right', fontWeight: 600 }}>Order total</td>
+              <td style={{ textAlign: 'right', fontSize: 20, fontWeight: 600 }}>${total(order)}</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
 
