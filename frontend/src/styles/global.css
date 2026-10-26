@@ -32,7 +32,7 @@ h3 { margin: 0; font-size: 18px; line-height: 24px; font-weight: 600; }
 
 /* Text */
 .label { font-size: 14px; color: var(--color-text-muted); }
-.big { font-size: 34px; font-weight: 600; margin: 6px 0 2px; }
+.big { font-size: 34px; line-height: 40px; font-weight: 600; margin: 6px 0 var(--space-8); }
 .up { color: var(--color-success); font-weight: 600; font-size: 14px; }
 .down { color: var(--color-error); font-weight: 600; font-size: 14px; }
 .star { color: var(--color-highlight); }
