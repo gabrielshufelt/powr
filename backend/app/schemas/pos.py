@@ -15,6 +15,9 @@ class PosCredentialsRequest(BaseModel):
     pos_name: PosProvider
     client_id: str = Field(..., min_length=1)
     client_secret: str = Field(..., min_length=1)
+    # On PATCH, omitted/null token and expiry leave the stored values unchanged.
+    access_token: str | None = Field(default=None, min_length=1)
+    expires_at: datetime | None = None
 
 
 class PosCredentialsResponse(BaseModel):
