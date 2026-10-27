@@ -47,3 +47,35 @@ def set_pos_credentials(
         ) from exc
 
     return SetPosResponse(message="POS credentials set successfully.")
+
+@router.patch("/credentials", response_model=SetPosResponse)
+def update_pos_credentials(
+    payload: PosCredentialsRequest,
+    user: OwnerDep,
+    db: DbSession,
+) -> SetPosResponse:
+    """Update POS credentials after verifying the caller is an owner."""
+    try:
+        service.update_credentials(
+            db,
+            pos_name=payload.pos_name,
+            client_id=payload.client_id,
+            client_secret=payload.client_secret,
+        )
+    except service.CredentialsNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="POS credentials not found for this provider.",
+        ) from exc
+    except service.CredentialsIntegrityError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to update POS credentials due to integrity error.",
+        ) from exc
+    except service.CredentialsStorageError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update POS credentials due to a database error.",
+        ) from exc
+
+    return SetPosResponse(message="POS credentials updated successfully.")
