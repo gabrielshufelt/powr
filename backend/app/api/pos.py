@@ -79,3 +79,25 @@ def update_pos_credentials(
         ) from exc
 
     return SetPosResponse(message="POS credentials updated successfully.")
+
+@router.delete("/credentials", response_model=SetPosResponse)
+def delete_pos_credentials(
+    pos_name: str,
+    user: OwnerDep,
+    db: DbSession,
+) -> SetPosResponse:
+    """Delete POS credentials after verifying the caller is an owner."""
+    try:
+        service.delete_credentials(db, pos_name=pos_name)
+    except service.CredentialsNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="POS credentials not found for this provider.",
+        ) from exc
+    except service.CredentialsStorageError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete POS credentials due to a database error.",
+        ) from exc
+
+    return SetPosResponse(message="POS credentials deleted successfully.")

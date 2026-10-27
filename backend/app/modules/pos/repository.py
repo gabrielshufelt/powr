@@ -32,3 +32,9 @@ def update_credentials(db: Session, *, pos_name: str, client_id: str, client_sec
         """),
         {"pos_name": pos_name, "client_id": client_id, "client_secret": client_secret},
     )
+
+def delete_credentials(db: Session, pos_name: str) -> None:
+    db.execute(
+        text("DELETE FROM pos_credentials WHERE pos_name = :pos_name"),
+        {"pos_name": pos_name},
+    )

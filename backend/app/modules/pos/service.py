@@ -58,3 +58,16 @@ def update_credentials(db: Session, *, pos_name: str, client_id: str, client_sec
     except SQLAlchemyError as exc:
         db.rollback()
         raise CredentialsStorageError from exc
+
+def delete_credentials(db: Session, *, pos_name: str) -> None:
+    try:
+        if not repository.credentials_exist(db, pos_name):
+            raise CredentialsNotFoundError
+        repository.delete_credentials(db, pos_name=pos_name)
+        db.commit()
+    except CredentialsNotFoundError:
+        db.rollback()
+        raise
+    except SQLAlchemyError as exc:
+        db.rollback()
+        raise CredentialsStorageError from exc
