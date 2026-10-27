@@ -43,7 +43,12 @@ jobs:
           for i in $(seq 1 40); do
             body=$(curl -fsS "$API_URL/health" || true)
             echo "attempt $i: $body"
-            if [ "$(echo "$body" | jq -r '.commit // empty')" = "$SHA" ]; then exit 0; fi
+            live=$(echo "$body" | jq -r '.commit // empty' 2>/dev/null || true)
+            if [ "$live" = "$SHA" ]; then exit 0; fi
+            if [ -n "$live" ]; then
+              git fetch -q origin master || true
+              if git merge-base --is-ancestor "$SHA" "$live" 2>/dev/null; then exit 0; fi
+            fi
             sleep 15
           done
           echo "Backend never reported commit $SHA" >&2
@@ -56,14 +61,17 @@ jobs:
           test "$(echo "$body" | jq -r .database)" = "ok"
 
       - name: Smoke test the frontend
-        run: curl -fsS -o /dev/null "$APP_URL/"
+        run: |
+          curl -fsS -o /dev/null "$APP_URL/"
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$APP_URL/api/auth/me")" = "401"
 
       - name: Record the deployment in the GitHub Release
         if: always()
         env:
           OUTCOME: ${{ job.status }}
         run: |
-          tag=$(git tag --points-at "$SHA" | head -n 1)
+          git fetch --tags --quiet origin || true
+          tag=$(git tag --points-at "$SHA" --list 'v*' | head -n 1)
           if [ -z "$tag" ]; then
             echo "No release tag on $SHA; nothing to record in a Release."
             exit 0

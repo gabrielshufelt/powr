@@ -14,7 +14,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 ROOT_ENV_FILE = Path(__file__).resolve().parents[3] / ".env"
 
 
-DEV_SESSION_SECRET_KEY = "dev-secret-key"  # To be changed in production
+DEV_SESSION_SECRET_KEY = "dev-secret-key"  # Committed Placeholder
 DEPLOYED_ENVIRONMENTS = frozenset({"staging", "production"})
 
 
