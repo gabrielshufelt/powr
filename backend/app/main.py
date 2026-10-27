@@ -39,7 +39,7 @@ async def validation_exception_handler(
 
     detail = "; ".join(messages) if messages else "Invalid request payload."
     return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         content={"detail": detail},
     )
 
