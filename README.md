@@ -125,10 +125,6 @@ Keep the key private and persistent across restarts, and use the same key for ev
 instance sharing a database. Replacing it makes existing ciphertext unreadable; retain the
 key securely with your database backups. Never commit a real key.
 
-The migration locks and updates rows in one transaction. It can be repeated: existing
-encrypted fields are authenticated and left unchanged. A wrong key, malformed envelope, or
-database error rolls back the migration. Normal reads reject plaintext and authentication
-failures rather than returning unverified values.
 
 POST and PATCH credential requests accept optional `access_token` and `expires_at` fields.
 On PATCH, an omitted or null token/expiry preserves its current value. Secrets are decrypted
