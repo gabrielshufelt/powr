@@ -2,6 +2,8 @@
 # AI contribution: 50% or more AI-generated
 """POS credential rules and transactions, independent of HTTP handling."""
 
+from typing import Any
+
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -19,8 +21,27 @@ class CredentialsIntegrityError(Exception):
 class CredentialsStorageError(Exception):
     """The credentials could not be stored due to a database failure."""
 
+
 class CredentialsNotFoundError(Exception):
     """The credentials for the provider were not found in the database."""
+
+
+def get_credentials(db: Session, pos_name: str) -> dict[str, Any] | None:
+    """Retrieve POS credentials for the given provider name."""
+    try:
+        return repository.get_credentials(db, pos_name)
+    except SQLAlchemyError as exc:
+        db.rollback()
+        raise CredentialsStorageError from exc
+
+
+def list_credentials(db: Session) -> list[dict[str, Any]]:
+    """List all configured providers without their secrets or access tokens."""
+    try:
+        return repository.list_credentials(db)
+    except SQLAlchemyError as exc:
+        db.rollback()
+        raise CredentialsStorageError from exc
 
 
 def save_credentials(db: Session, *, pos_name: str, client_id: str, client_secret: str) -> None:
@@ -41,6 +62,7 @@ def save_credentials(db: Session, *, pos_name: str, client_id: str, client_secre
         db.rollback()
         raise CredentialsStorageError from exc
 
+
 def update_credentials(db: Session, *, pos_name: str, client_id: str, client_secret: str) -> None:
     try:
         if not repository.credentials_exist(db, pos_name):
@@ -58,6 +80,7 @@ def update_credentials(db: Session, *, pos_name: str, client_id: str, client_sec
     except SQLAlchemyError as exc:
         db.rollback()
         raise CredentialsStorageError from exc
+
 
 def delete_credentials(db: Session, *, pos_name: str) -> None:
     try:

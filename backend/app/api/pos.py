@@ -10,10 +10,50 @@ from sqlalchemy.orm import Session
 from app.core.auth import OwnerDep
 from app.core.database import get_db
 from app.modules.pos import service
-from app.schemas.pos import PosCredentialsRequest, SetPosResponse
+from app.schemas.pos import (
+    PosCredentialsRequest,
+    PosCredentialsResponse,
+    PosProvider,
+    SetPosResponse,
+)
 
 router = APIRouter(prefix="/api/pos", tags=["pos"])
 DbSession = Annotated[Session, Depends(get_db)]
+
+
+@router.get("/credentials/all", response_model=list[PosCredentialsResponse])
+def list_pos_credentials(user: OwnerDep, db: DbSession) -> list[PosCredentialsResponse]:
+    """List all configured providers for an owner; no request body is required."""
+    try:
+        credentials = service.list_credentials(db)
+    except service.CredentialsStorageError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to list POS credentials due to a database error.",
+        ) from exc
+    return [PosCredentialsResponse.model_validate(row) for row in credentials]
+
+
+@router.get("/credentials", response_model=PosCredentialsResponse)
+def get_pos_credentials(
+    pos_name: PosProvider,
+    user: OwnerDep,
+    db: DbSession,
+) -> PosCredentialsResponse:
+    """Get POS credentials for the given provider name after verifying the caller is an owner."""
+    try:
+        credentials = service.get_credentials(db, pos_name)
+    except service.CredentialsStorageError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get POS credentials due to a database error.",
+        ) from exc
+    if credentials is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="POS credentials not found for this provider.",
+        )
+    return PosCredentialsResponse.model_validate(credentials)
 
 
 @router.post("/credentials", response_model=SetPosResponse)
@@ -48,6 +88,7 @@ def set_pos_credentials(
 
     return SetPosResponse(message="POS credentials set successfully.")
 
+
 @router.patch("/credentials", response_model=SetPosResponse)
 def update_pos_credentials(
     payload: PosCredentialsRequest,
@@ -79,6 +120,7 @@ def update_pos_credentials(
         ) from exc
 
     return SetPosResponse(message="POS credentials updated successfully.")
+
 
 @router.delete("/credentials", response_model=SetPosResponse)
 def delete_pos_credentials(
