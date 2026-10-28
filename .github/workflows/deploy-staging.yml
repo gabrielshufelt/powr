@@ -1,0 +1,89 @@
+# Source-File AI Declaration
+# AI contribution: 50% or more AI-generated
+name: deploy-staging
+
+# Render deploys the backend after CI passes (render.yaml: autoDeployTrigger: checksPass) and
+# Vercel deploys the frontend from its Git integration. This workflow waits for the new backend
+# to go live, smoke-tests it and records the outcome in the matching GitHub Release.
+# It uses no stored secrets: STAGING_API_URL and STAGING_APP_URL are repository variables.
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+    branches: [master]
+
+permissions:
+  contents: write
+  deployments: write
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: ${{ vars.STAGING_APP_URL }}
+    env:
+      SHA: ${{ github.event.workflow_run.head_sha }}
+      API_URL: ${{ vars.STAGING_API_URL }}
+      APP_URL: ${{ vars.STAGING_APP_URL }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Wait for the backend to serve this commit
+        run: |
+          for i in $(seq 1 40); do
+            body=$(curl -fsS "$API_URL/health" || true)
+            echo "attempt $i: $body"
+            live=$(echo "$body" | jq -r '.commit // empty' 2>/dev/null || true)
+            if [ "$live" = "$SHA" ]; then exit 0; fi
+            if [ -n "$live" ]; then
+              git fetch -q origin master || true
+              if git merge-base --is-ancestor "$SHA" "$live" 2>/dev/null; then exit 0; fi
+            fi
+            sleep 15
+          done
+          echo "Backend never reported commit $SHA" >&2
+          exit 1
+
+      - name: Smoke test /health
+        run: |
+          body=$(curl -fsS "$API_URL/health")
+          test "$(echo "$body" | jq -r .status)" = "ok"
+          test "$(echo "$body" | jq -r .database)" = "ok"
+
+      - name: Smoke test the frontend
+        run: |
+          curl -fsS -o /dev/null "$APP_URL/"
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$APP_URL/api/auth/me")" = "401"
+
+      - name: Record the deployment in the GitHub Release
+        if: always()
+        env:
+          OUTCOME: ${{ job.status }}
+        run: |
+          git fetch --tags --quiet origin || true
+          tag=$(git tag --points-at "$SHA" --list 'v*' | head -n 1)
+          if [ -z "$tag" ]; then
+            echo "No release tag on $SHA; nothing to record in a Release."
+            exit 0
+          fi
+          {
+            gh release view "$tag" --json body -q .body
+            echo
+            echo "### Deployment: staging"
+            echo "- Version: \`$tag\` (commit \`$SHA\`)"
+            echo "- Environment: staging ($APP_URL)"
+            echo "- Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "- Outcome: $OUTCOME (health smoke test: $API_URL/health)"
+            echo "- Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } > notes.md
+          gh release edit "$tag" --notes-file notes.md

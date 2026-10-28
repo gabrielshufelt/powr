@@ -39,7 +39,9 @@ TITLE_LINE = re.compile(_COMMENT.format(text="Source-File AI Declaration"))
 AI_LINE = re.compile(_COMMENT.format(text=f"AI contribution: (?:{_LEVEL_OPTIONS})"))
 BASELINE_LINE = re.compile(_COMMENT.format(text="Human-authored baseline:.*"))
 VALID_BASELINE_LINE = re.compile(
-    _COMMENT.format(text=f"Human-authored baseline: (?:{_HUMAN_OPTIONS}); human-authors: .+")
+    _COMMENT.format(
+        text=f"Human-authored baseline: (?:{_HUMAN_OPTIONS}); human-authors: .+"
+    )
 )
 # Lines allowed before the declaration (see AGENTS.md "Required form").
 PREAMBLE_LINE = re.compile(r"^(?:#!|# -\*- coding|# syntax=)")
@@ -66,7 +68,9 @@ def list_repository_files(paths: list[str]) -> list[str]:
 
 def is_source_file(relative_path: str) -> bool:
     path = Path(relative_path)
-    if EXCLUDED_DIRS.intersection(path.parts) or relative_path.startswith(EXCLUDED_PREFIXES):
+    if EXCLUDED_DIRS.intersection(path.parts) or relative_path.startswith(
+        EXCLUDED_PREFIXES
+    ):
         return False
     if relative_path.startswith(WORKFLOWS_DIR) and path.suffix in {".yml", ".yaml"}:
         return True
@@ -89,7 +93,9 @@ def declaration_error(path: Path) -> str | None:
     if not TITLE_LINE.match(head[0]):
         return "first line must be 'Source-File AI Declaration'"
     if not AI_LINE.match(head[1]):
-        return f"second line must be 'AI contribution: <one of: {', '.join(AI_LEVELS)}>'"
+        return (
+            f"second line must be 'AI contribution: <one of: {', '.join(AI_LEVELS)}>'"
+        )
     if BASELINE_LINE.match(head[2]) and not VALID_BASELINE_LINE.match(head[2]):
         return (
             "human-authored baseline must be "

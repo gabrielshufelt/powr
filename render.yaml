@@ -1,0 +1,24 @@
+# Source-File AI Declaration
+# AI contribution: 50% or more AI-generated
+# Render Blueprint for the staging backend. Values marked sync: false are entered in the
+# Render dashboard and never committed.
+services:
+  - type: web
+    name: powr-backend-staging
+    runtime: docker
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    branch: master
+    autoDeployTrigger: checksPass
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: staging
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SESSION_SECRET_KEY
+        generateValue: true
