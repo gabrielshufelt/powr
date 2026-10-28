@@ -1,7 +1,9 @@
 # Deployment and release strategy
 
 Hosting as chosen in issue #5: backend on Render, frontend on Vercel, PostgreSQL on Neon.
-This page is written to be copied to the project wiki.
+This page is also published on the wiki as
+[Deployment Plan and Infrastructure](https://github.com/powr-soen-490/powr/wiki/Deployment-Plan-and-Infrastructure);
+update both together.
 
 ## Deployment diagram
 
@@ -51,6 +53,13 @@ Secrets exist only in the hosts' settings. GitHub stores none.
 | Render | `CORS_ORIGINS` | `["https://powr-rho.vercel.app"]` (JSON list of the Vercel URL) |
 | Render | `ENVIRONMENT=staging`, `COOKIE_SECURE=true` | the app refuses to start otherwise |
 | GitHub repository variables (not secrets) | `STAGING_API_URL`, `STAGING_APP_URL` | the two URLs above, without a trailing slash |
+
+The staging URLs are also written out in files that cannot read the repository variables. If the Render service
+or the Vercel project is renamed, update these together with the variables and the table above:
+
+- [frontend/vercel.json](../frontend/vercel.json): the `/api/*` rewrite destination (the Render URL)
+- [scripts/open_staging.py](../scripts/open_staging.py): the URLs it opens
+- [README.md](../README.md#deployment): the staging table in the Deployment section
 
 The Render service builds the `master` branch and auto-deploys after CI checks pass.
 

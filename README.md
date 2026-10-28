@@ -309,6 +309,31 @@ and publishes the GitHub Release.
 
 `fix:` bumps the patch version, `feat:` the minor, and `feat!:` or `BREAKING CHANGE:` the major.
 
+### `deploy-staging` workflow ([deploy-staging.yml](.github/workflows/deploy-staging.yml))
+
+Runs after `ci` passes on `master`. Waits until the staging backend's `/health` reports the merged commit,
+smoke-tests the backend and frontend, and records the deployment in the matching GitHub Release.
+
+## Deployment
+
+Every merge to `master` deploys to staging:
+
+| Component | Host | URL |
+|---|---|---|
+| Frontend | Vercel | https://powr-rho.vercel.app |
+| Backend | Render | https://powr-backend-staging.onrender.com |
+| Database | Neon | connection string set only in Render |
+
+Render deploys the backend once CI passes and applies the database scripts on start. Vercel deploys the
+frontend and proxies `/api/*` to Render. The free tiers sleep when idle, so the first request after a pause
+can take about a minute.
+
+Run `python scripts/open_staging.py` to open the staging app, `/health` and the Neon console in your browser.
+
+The deployment diagram, secrets, rollback steps and release strategy are in
+[docs/deployment.md](docs/deployment.md), also published on the wiki as
+[Deployment Plan and Infrastructure](https://github.com/powr-soen-490/powr/wiki/Deployment-Plan-and-Infrastructure).
+
 ## Contributing
 
 ### Branch naming
