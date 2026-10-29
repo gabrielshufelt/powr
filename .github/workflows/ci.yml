@@ -89,7 +89,14 @@ jobs:
 
       - name: Run unit tests
         working-directory: frontend
-        run: npm test
+        run: npm run test:coverage
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: frontend/coverage/lcov.info
+          flags: frontend
 
   backend-tests:
     name: backend-tests
@@ -123,6 +130,18 @@ jobs:
         working-directory: backend
         run: pip install -r requirements-dev.txt
 
-      - name: Run unit and integration tests
+      # Coverage counts unit tests only; integration tests still run and must pass
+      - name: Run unit tests with coverage
         working-directory: backend
-        run: pytest
+        run: pytest tests/unit --cov=app --cov-report=xml
+
+      - name: Run integration tests
+        working-directory: backend
+        run: pytest tests/integration
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: backend/coverage.xml
+          flags: backend

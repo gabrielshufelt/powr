@@ -9,9 +9,11 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import OperationalError
 
+from app.core.config import Settings, get_settings
 from app.core.database import get_db
 
 FRONTEND_ORIGIN = "http://localhost:5173"
+DATABASE_URL = "postgresql://powr:powr@localhost:5432/powr_test"
 
 
 class StubSession:
@@ -27,25 +29,45 @@ def use_session(app: FastAPI, session: StubSession) -> None:
     app.dependency_overrides[get_db] = lambda: session
 
 
-def test_health_reports_ok_when_database_is_reachable(app: FastAPI, client: TestClient) -> None:
+def use_settings(app: FastAPI, settings: Settings) -> None:
+    app.dependency_overrides[get_settings] = lambda: settings
+
+
+def test_health_reports_ok_when_database_is_reachable(
+    app: FastAPI, client: TestClient, settings: Settings
+) -> None:
     use_session(app, StubSession())
+    use_settings(app, settings)
 
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "database": "ok"}
+    assert response.json() == {"status": "ok", "database": "ok", "commit": None}
+
+
+def test_health_reports_the_deployed_commit(app: FastAPI, client: TestClient) -> None:
+    use_session(app, StubSession())
+    use_settings(
+        app,
+        Settings(_env_file=None, database_url=DATABASE_URL, RENDER_GIT_COMMIT="0123abc"),
+    )
+
+    response = client.get("/health")
+
+    assert response.json()["commit"] == "0123abc"
 
 
 def test_health_returns_503_without_leaking_error_details(
-    app: FastAPI, client: TestClient, caplog: pytest.LogCaptureFixture
+    app: FastAPI, client: TestClient, settings: Settings, caplog: pytest.LogCaptureFixture
 ) -> None:
     error = OperationalError("SELECT 1", {}, Exception("could not connect to db-secret-host"))
     use_session(app, StubSession(error))
+    use_settings(app, settings)
 
     response = client.get("/health")
 
     assert response.status_code == 503
-    assert response.json() == {"status": "degraded", "database": "unavailable"}
+    assert response.json() == {"status": "degraded", "database": "unavailable", "commit": None}
     assert "db-secret-host" not in response.text
     assert any(
         record.levelno == logging.ERROR and record.name == "app.core.database"

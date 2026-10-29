@@ -24,7 +24,7 @@ def test_health_reports_ok_against_a_running_database(integration_database_url: 
         response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "database": "ok"}
+    assert response.json() == {"status": "ok", "database": "ok", "commit": None}
 
 
 def test_health_reports_unavailable_when_database_refuses_connections() -> None:
@@ -34,7 +34,7 @@ def test_health_reports_unavailable_when_database_refuses_connections() -> None:
         response = client.get("/health")
 
     assert response.status_code == 503
-    assert response.json() == {"status": "degraded", "database": "unavailable"}
+    assert response.json() == {"status": "degraded", "database": "unavailable", "commit": None}
 
 
 def test_health_fails_fast_when_database_does_not_respond() -> None:
