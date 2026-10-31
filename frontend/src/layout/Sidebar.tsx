@@ -1,13 +1,21 @@
 // Source-File AI Declaration
 // AI contribution: 50% or more AI-generated
 
-import { NAV, type PageId } from './navigation'
+import type { NavigationItem, PageId } from './navigation'
 
-export function Sidebar({ page, onNavigate }: { page: PageId; onNavigate: (page: PageId) => void }) {
+export function Sidebar({
+  page,
+  items,
+  onNavigate,
+}: {
+  page: PageId | null
+  items: NavigationItem[]
+  onNavigate: (page: PageId) => void
+}) {
   return (
     <nav className="sidebar" aria-label="Main">
       <div className="wordmark">POWR</div>
-      {NAV.map((item) => (
+      {items.map((item) => (
         <button
           key={item.id}
           className={`nav-item ${item.id === page ? 'active' : ''}`}
