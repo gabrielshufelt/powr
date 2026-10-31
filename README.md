@@ -323,10 +323,12 @@ Checks dependencies for known vulnerabilities with `pip-audit` (`backend/require
 transitive packages) and `npm audit` (`frontend/` and the repository root, shown as `frontend` and `e2e`).
 Docker base images and GitHub Actions versions are not covered.
 
-| Runs on | Job | What it does |
-|---|---|---|
-| Every pull request | `warn` | Reports findings only. The check stays green, so it never blocks merging; keep it out of the required checks |
-| Daily at 09:00 UTC, or started from the Actions tab | `open-issues` | Reports findings and opens or updates GitHub issues. Fails if a scan cannot run |
+The `scan` job does the following:
+
+| Runs on | What it does |
+|---|---|
+| Every pull request | Reports findings only. The check stays green, so it never blocks merging; keep it out of the required checks |
+| Daily at 09:00 UTC, or started from the Actions tab | Reports findings and opens or updates GitHub issues. Green when it runs, whatever it finds; fails only if a scan cannot run |
 
 | Severity | PR warning | Job summary | GitHub issue |
 |---|---|---|---|

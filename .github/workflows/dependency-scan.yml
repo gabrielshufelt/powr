@@ -19,34 +19,13 @@ env:
   PIP_AUDIT_VERSION: "2.10.1"
 
 jobs:
-  warn:
-    name: warn
-    if: github.event_name == 'pull_request'
+  scan:
+    name: scan
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install pip-audit
-        run: pip install "pip-audit==$PIP_AUDIT_VERSION"
-
-      - name: Report vulnerabilities
-        run: python scripts/report_vulnerabilities.py
-
-  open-issues:
-    name: open-issues
-    if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    # Two runs at once could both see no open issue and both create it
+    # Two issue-opening runs at once could both see no open issue and both create it.
+    # Pull requests open no issues, so each gets its own group and never waits.
     concurrency:
-      group: dependency-scan-issues
+      group: ${{ github.event_name == 'pull_request' && format('dependency-scan-{0}', github.run_id) || 'dependency-scan-issues' }}
       cancel-in-progress: false
     permissions:
       contents: read
@@ -65,7 +44,8 @@ jobs:
       - name: Install pip-audit
         run: pip install "pip-audit==$PIP_AUDIT_VERSION"
 
-      - name: Open or update issues
+      # Unmerged pull requests must not open issues, so they only report
+      - name: Scan dependencies
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python scripts/report_vulnerabilities.py --open-issues
+        run: python scripts/report_vulnerabilities.py ${{ github.event_name != 'pull_request' && '--open-issues' || '' }}
